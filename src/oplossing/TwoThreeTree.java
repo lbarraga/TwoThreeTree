@@ -3,11 +3,12 @@ package oplossing;
 import opgave.SearchTree;
 
 import java.util.Iterator;
+import java.util.Stack;
 
 public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     private int size = 0;
-    private Node<E> root = null; // Er is bij aanvang nog geen root node
+    public Node<E> root = null; // Er is bij aanvang nog geen root node
 
     @Override
     public int size() {
@@ -22,24 +23,79 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     @Override
     public boolean contains(E o) {
         Node<E> node = root;
-        while (node != null && node.getLeftValue() != o && node.getRightValue() != o) {
-
-            if (node.getLeftValue().compareTo(o) < 0){ // Te zoeken waarde zit mogelijk in de linker deelboom.
-                node = node.getLeftChild();
-            } else if (node.getRightValue().compareTo(o) > 0) { // Mogelijks in de rechter deelboom.
-                node = node.getRightChild();
-            } else {
-                node = node.getMiddleChild(); // Mogelijks in de middelste deelboom.
-            }
-
+        while (node != null && node.leftValue != o && node.rightValue != o) {
+            node = node.getChild(o);
         }
         return node != null;
     }
 
     @Override
     public boolean add(E o) {
+        this.size += 1;
+        Stack<Node<E>> stack = new Stack<>();
+        Node<E> newNode = new Node<>(o, null);
         Node<E> node = root;
-        return false;
+
+        if (root == null){
+            this.root = newNode;
+            return true;
+        }
+        // Stack met de doorlopen nodes
+        while (node  != null) {
+            stack.push(node);
+            node = node.getChild(o);
+        }
+
+        // Toevoegen van de waarde o. Dit maakt van de 2-3-boom een bijna-2-3-boom
+        node = stack.peek();
+        if (node.leftValue != null && node.leftValue.compareTo(o) > 0) {
+            node.leftChild = newNode;
+            //System.out.println(newNode + " is nu het linker kind van " + node);
+        } else if (node.rightValue != null && node.rightValue.compareTo(o) < 0) {
+            node.rightChild = newNode;
+            //System.out.println(newNode + " is nu het rechter kind van " + node);
+        } else {
+            node.middleChild = newNode;
+            //System.out.println(newNode + " is nu het middel kind van " + node);
+        }
+        stack.push(newNode);
+        // System.out.println(stack);
+        // doorloop de nodes terug in omgekeerde volgorde en herbalanceer zodat de boom terug geldig wordt.
+        while (stack.size() > 1) {
+            node = stack.pop();
+            Node<E> parent = stack.peek();
+            if (parent.leftValue == null || parent.rightValue == null) {
+                parent.rightValue = node.leftValue;
+                parent.middleChild = node.leftChild;
+                parent.rightChild = node.middleChild;
+                // System.out.println("in");
+                break;
+            }
+            // Maak een kleine binaire boom van de node
+            Node<E> linkerNode = new Node<>(parent.leftValue, null);
+            linkerNode.leftChild = parent.leftChild;
+            linkerNode.middleChild = parent.middleChild;
+            parent.leftValue = parent.rightValue;
+            parent.rightValue = null;
+            parent.leftChild = linkerNode;
+            parent.middleChild = parent.rightChild;
+            parent.rightChild = null;
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        TwoThreeTree<Integer> tree = new TwoThreeTree<>();
+        tree.add(0);
+        TwoThreeTreeDrawer<Integer> drawer = new TwoThreeTreeDrawer<>(tree.root);
+        //drawer.draw();
+        long start = System.currentTimeMillis();
+        for (int i = 1; i < 100_000_000; i++) {
+            //System.out.println("==================== stap " + i + " ====================");
+            tree.add(i);
+            // drawer.draw();
+        }
+        System.out.println(System.currentTimeMillis() - start);
     }
 
     @Override
@@ -59,12 +115,12 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     public static class Node<E extends Comparable<E>> {
 
-        private final E leftValue;
-        private final E rightValue;
+        public E leftValue;
+        public E rightValue;
 
-        private Node<E> leftChild;
-        private Node<E> middleChild;
-        private Node<E> rightChild;
+        public Node<E> leftChild;
+        public Node<E> middleChild;
+        public Node<E> rightChild;
 
 
         public Node(E leftValue, E rightValue) {
@@ -72,36 +128,14 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             this.rightValue = rightValue;
         }
 
-        public E getLeftValue() {
-            return leftValue;
-        }
-
-        public E getRightValue() {
-            return rightValue;
-        }
-
-        public void setLeftChild(Node<E> leftChild) {
-            this.leftChild = leftChild;
-        }
-
-        public void setRightChild(Node<E> rightChild) {
-            this.rightChild = rightChild;
-        }
-
-        public void setMiddleChild(Node<E> middleChild) {
-            this.middleChild = middleChild;
-        }
-
-        public Node<E> getLeftChild() {
-            return leftChild;
-        }
-
-        public Node<E> getMiddleChild() {
+        public Node<E> getChild(E o) {
+            if (leftValue != null && leftValue.compareTo(o) > 0) {
+                return leftChild;
+            }
+            if (rightValue != null && rightValue.compareTo(o) < 0) {
+                return rightChild;
+            }
             return middleChild;
-        }
-
-        public Node<E> getRightChild() {
-            return rightChild;
         }
 
         @Override
