@@ -53,6 +53,63 @@ public interface SearchTreeTest {
     }
 
     @Test
+    default void addMultipleDescending() {
+        SearchTree<Integer> tree = createTree();
+
+        for (int i = 10; i >= 0; i--) {
+            assertTrue(tree.add(i));
+        }
+        for (int i = 0; i < 10; i++) {
+            assertTrue(tree.contains(i), String.format("should contain %d", i));
+        }
+    }
+
+    default void addRandoms(int n, int range) {
+        SearchTree<Integer> tree = createTree();
+        List<Integer> randoms = randomArrayList(100_000, 100_000);
+        for (Integer random : randoms) {
+            tree.add(random);
+        }
+
+        for (Integer random : randoms) {
+            assertTrue(tree.contains(random), String.format("should contain %d", random));
+        }
+    }
+
+    @Test
+    default void addFewRandoms() {
+        addRandoms(20, 100);
+    }
+
+    @Test
+    default void addManyRandoms() {
+        addRandoms(10_000, 100_000);
+    }
+
+    @Test
+    default void addManyDuplicatesRandoms() {
+        addRandoms(10_000, 100);
+    }
+
+    @Test
+    default void addEvenMoreRandoms() {
+        addRandoms(1_000_000, 10_000_000);
+    }
+
+    default ArrayList<Integer> randomArrayList(int n, int range)
+    {
+        ArrayList<Integer> list = new ArrayList<>();
+        Random random = new Random();
+        random.setSeed(1);
+
+        for (int i = 0; i < n; i++)
+        {
+            list.add(random.nextInt(range));
+        }
+        return list;
+    }
+
+    @Test
     default void removeMultiple() {
         SearchTree<Integer>tree = createTree();
 
@@ -72,6 +129,17 @@ public interface SearchTreeTest {
         SearchTree<Integer> tree = createTree();
         List<Integer> expected = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
+            assertTrue(tree.add(i), String.format("should change when adding %d", i));
+            expected.add(i);
+        }
+        assertIterableEquals(expected, tree);
+    }
+
+    @Test
+    default void iteratorRandoms() {
+        SearchTree<Integer> tree = createTree();
+        List<Integer> expected = new ArrayList<>();
+        for (int i = 10; i >= 0; i--) {
             assertTrue(tree.add(i), String.format("should change when adding %d", i));
             expected.add(i);
         }
