@@ -1,5 +1,6 @@
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
+import oplossing.TwoThreeTree;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -66,7 +67,7 @@ public interface SearchTreeTest {
 
     default void addRandoms(int n, int range) {
         SearchTree<Integer> tree = createTree();
-        List<Integer> randoms = randomArrayList(100_000, 100_000);
+        List<Integer> randoms = randomArrayList(n, range);
         for (Integer random : randoms) {
             tree.add(random);
         }
@@ -139,10 +140,14 @@ public interface SearchTreeTest {
     default void iteratorRandoms() {
         SearchTree<Integer> tree = createTree();
         List<Integer> expected = new ArrayList<>();
+
         for (int i = 10; i >= 0; i--) {
             assertTrue(tree.add(i), String.format("should change when adding %d", i));
             expected.add(i);
         }
+        expected.sort(Comparator.comparingInt(value -> value)); // sorteer de lijst.
         assertIterableEquals(expected, tree);
     }
+
+    boolean isValidTree(SearchTree<Integer> tree);
 }

@@ -51,10 +51,9 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         }
 
         // Toevoegen van de waarde o. Dit maakt van de 2-3-boom een bijna-2-3-boom
-        Node<E> blad = stack.peek();
-        blad.setChild(newNode);
-
+        stack.peek().setChild(newNode);
         stack.push(newNode);
+
         // doorloop de nodes terug in omgekeerde volgorde en herbalanceer zodat de boom terug geldig wordt.
         while (stack.size() > 1) {
             node = stack.pop();
