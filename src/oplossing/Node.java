@@ -53,7 +53,7 @@ public class Node<E extends Comparable<E>> {
 
     public void percolateUp(Node<E> parent, E o) {
         // parent left value kan enkel null zijn wanneer de root (null, null) is
-        if (!hasLeftValue() || parent.leftValue.compareTo(o) > 0) {
+        if (!parent.hasLeftValue() || parent.leftValue.compareTo(o) > 0) {
             percolateUpFromLeft(parent);
         } else {
             percolateUpFromRight(parent);

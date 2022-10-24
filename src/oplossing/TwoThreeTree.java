@@ -35,7 +35,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         Node<E> node = root;
         while (node  != null && ! node.hasValue(o)) {
             stack.push(node);
-            node = node.getChild(o);
+            node = node.getChild(o); // daal af in de boom
         }
 
         if (node != null){ // Het element zit al in de boom.
