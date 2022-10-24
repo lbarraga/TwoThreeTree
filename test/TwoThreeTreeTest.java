@@ -1,4 +1,5 @@
 import opgave.SearchTree;
+import oplossing.Node;
 import oplossing.TwoThreeTree;
 
 import java.util.ArrayList;
@@ -28,12 +29,6 @@ public class TwoThreeTreeTest implements SearchTreeTest {
         assertTrue(is23Tree(tree), "Tree is not a 23Tree");
     }
 
-    @Override
-    public boolean isValidTree(SearchTree<Integer> tree) {
-        TwoThreeTree<Integer> t2 = (TwoThreeTree<Integer>) tree;
-        return isSorted(t2) && allNodesSameHeight(t2);
-    }
-
     public boolean is23Tree(TwoThreeTree<Integer> tree){
         return isSorted(tree) && allNodesSameHeight(tree);
     }
@@ -49,13 +44,6 @@ public class TwoThreeTreeTest implements SearchTreeTest {
         return true;
     }
 
-    private static <T> List<T> copyIterator(Iterator<T> iter) {
-        List<T> copy = new ArrayList<T>();
-        while (iter.hasNext())
-            copy.add(iter.next());
-        return copy;
-    }
-
     private Integer depth;
 
     private boolean allNodesSameHeight(TwoThreeTree<Integer> tree) {
@@ -63,7 +51,7 @@ public class TwoThreeTreeTest implements SearchTreeTest {
         return allNodesSameHeightHulp(tree.root, 0);
     }
 
-    private boolean allNodesSameHeightHulp(TwoThreeTree.Node<?> node, int level) {
+    private boolean allNodesSameHeightHulp(Node<Integer> node, int level) {
         if (node == null) {
             return true;
         }
@@ -81,7 +69,7 @@ public class TwoThreeTreeTest implements SearchTreeTest {
                 && (node.rightValue == null || allNodesSameHeightHulp(node.rightChild, level + 1));
     }
 
-    private boolean isLeaf(TwoThreeTree.Node<?> node){
+    private boolean isLeaf(Node<Integer> node){
         return node.leftChild == null && node.rightChild == null && node.middleChild == null;
     }
 

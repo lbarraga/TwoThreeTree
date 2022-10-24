@@ -65,18 +65,6 @@ public interface SearchTreeTest {
         }
     }
 
-    default void addRandoms(int n, int range) {
-        SearchTree<Integer> tree = createTree();
-        List<Integer> randoms = randomArrayList(n, range);
-        for (Integer random : randoms) {
-            tree.add(random);
-        }
-
-        for (Integer random : randoms) {
-            assertTrue(tree.contains(random), String.format("should contain %d", random));
-        }
-    }
-
     @Test
     default void addFewRandoms() {
         addRandoms(20, 100);
@@ -149,5 +137,15 @@ public interface SearchTreeTest {
         assertIterableEquals(expected, tree);
     }
 
-    boolean isValidTree(SearchTree<Integer> tree);
+    default void addRandoms(int n, int range) {
+        SearchTree<Integer> tree = createTree();
+        List<Integer> randoms = randomArrayList(n, range);
+        for (Integer random : randoms) {
+            tree.add(random);
+        }
+
+        for (Integer random : randoms) {
+            assertTrue(tree.contains(random), String.format("should contain %d", random));
+        }
+    }
 }
