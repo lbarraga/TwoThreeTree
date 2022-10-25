@@ -64,6 +64,25 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         return true;
     }
 
+    public boolean addRecursive(E o) {
+        Node<E> newNode = new Node<>(o, null);
+        return addRecursiveHulp(root, null, newNode);
+    }
+
+    public boolean addRecursiveHulp(Node<E> to, Node<E> parent, Node<E> newNode){
+        if (to == null){
+            parent.setChild(newNode);
+            return true;
+        }
+        addRecursiveHulp(to.getChild(newNode.leftValue), to, newNode);
+        if (parent != null && ! parent.hasRightValue()){
+            to.percolateUp(parent, newNode.leftValue);
+            return true;
+        }
+        parent.convertToBinary(newNode.leftValue);
+        return true;
+    }
+
     @Override
     public boolean remove(E e) {
         return false;
