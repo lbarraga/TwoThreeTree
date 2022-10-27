@@ -57,35 +57,52 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             node = parent;
         }
 
-        if (!stack.isEmpty()) {
+        if (!stack.isEmpty()) { // While is gestopt omdat er een plaats vrij is in de rechter value van de parent
             node.percolateUp(stack.pop(), o);
         }
 
         return true;
     }
 
-    public boolean addRecursive(E o) {
-        Node<E> newNode = new Node<>(o, null);
-        return addRecursiveHulp(root, null, newNode);
-    }
-
-    public boolean addRecursiveHulp(Node<E> to, Node<E> parent, Node<E> newNode){
-        if (to == null){
-            parent.setChild(newNode);
-            return true;
-        }
-        addRecursiveHulp(to.getChild(newNode.leftValue), to, newNode);
-        if (parent != null && ! parent.hasRightValue()){
-            to.percolateUp(parent, newNode.leftValue);
-            return true;
-        }
-        parent.convertToBinary(newNode.leftValue);
-        return true;
-    }
-
     @Override
     public boolean remove(E e) {
-        return false;
+        // Zoek de value op.
+        Node<E> current = root;
+        Stack<Node<E>> stack = new Stack<>();
+        while (current != null && !current.hasValue(e)){
+            stack.push(current);
+            current = current.getChild(e);
+        }
+
+        if (current == null){ // waarde zat er nog niet in, niets wordt verwijderd
+            return false;
+        }
+
+        Node<E> verwijderNode = current;
+
+        // Vervang current node door de kleinste value in de rechter of middelste boom
+        current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
+        while (current.leftChild != null){
+            current = current.leftChild;
+        }
+
+        // Verwijder de waarde in het blad
+        E kleinsteInDeelBoom = current.leftValue;
+        current.leftValue = null;
+        current.swapValues();
+
+        // Vervang de waarde van het blad in de vervang-node
+        if (verwijderNode.leftValue.compareTo(e) == 0){
+            verwijderNode.leftValue = kleinsteInDeelBoom;
+        } else {
+            verwijderNode.rightValue = kleinsteInDeelBoom;
+        }
+
+
+
+        // vervang door kleinste waarde in rechter deelboom
+
+        return true;
     }
 
     @Override
@@ -111,6 +128,26 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             list.add(node.rightValue);
             inorder(node.rightChild, list);
         }
+
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        drawWithIndent(0, root, "", builder);
+        return builder.toString();
+    }
+
+    private void drawWithIndent(int indent, Node<E> node, String type, StringBuilder stringBuilder) {
+        if (node == null) {
+            return;
+        }
+
+        stringBuilder.append("     |".repeat(indent) + "-> " + type + " " + node + "\n");
+
+        drawWithIndent(indent + 1, node.leftChild  , "L", stringBuilder);
+        drawWithIndent(indent + 1, node.middleChild, "M", stringBuilder);
+        drawWithIndent(indent + 1, node.rightChild , "R", stringBuilder);
 
     }
 }
