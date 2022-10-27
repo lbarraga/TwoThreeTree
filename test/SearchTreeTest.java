@@ -1,5 +1,6 @@
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
+import oplossing.Node;
 import oplossing.TwoThreeTree;
 import org.junit.jupiter.api.Test;
 
@@ -44,11 +45,11 @@ public interface SearchTreeTest {
     @Test
     default void addMultiple() {
         SearchTree<Integer> tree = createTree();
-
-        for (int i = 0; i < 10; i++) {
+        int n = 5_000_000;
+        for (int i = 0; i < n; i++) {
             assertTrue(tree.add(i));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < n; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
     }
@@ -63,6 +64,7 @@ public interface SearchTreeTest {
         for (int i = 0; i < 10; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
+        System.out.println(tree);
     }
 
     @Test
@@ -111,6 +113,23 @@ public interface SearchTreeTest {
             assertFalse(tree.contains(i), String.format("should not contain %d anymore", i));
         }
         assertEquals(0, tree.size(), "should be empty");
+    }
+
+    @Test
+    default void myRemoveMultiple(){
+        SearchTree<Integer>tree = createTree();
+
+        for (int i = 0; i < 10; i++) {
+            assertTrue(tree.add(i), String.format("should change when adding %d", i));
+        }
+        for (int i = 0; i < 10; i++) {
+            assertTrue(tree.contains(i), String.format("should contain %d", i));
+        }
+        System.out.println(tree);
+        assertTrue(tree.remove(5), String.format("should change when removing %d", 5));
+        System.out.println(tree);
+        assertFalse(tree.contains(5), String.format("should not contain %d anymore", 5));
+        // assertEquals(0, tree.size(), "should be empty");
     }
 
     @Test
