@@ -3,6 +3,7 @@ package oplossing.benchmarks;
 import opgave.samplers.Sampler;
 import oplossing.TwoThreeTree;
 
+import java.util.List;
 import java.util.Random;
 
 public class TwoThreeTreeBenchMarker {
@@ -10,7 +11,7 @@ public class TwoThreeTreeBenchMarker {
     public static final Random RG = new Random();
 
     public static void main(String[] args) {
-        meanTimeAddNRandoms(1_000_000, 10);
+        meanTimeAddNRandoms(1_000_000, 5);
     }
 
     public static void timeAdd_10_000_Randoms(){
@@ -20,9 +21,10 @@ public class TwoThreeTreeBenchMarker {
     public static double timeAddNRandoms(int n) {
         Sampler sampler = new Sampler(RG, n);
         TwoThreeTree<Integer> tree = new TwoThreeTree<>();
+        List<Integer> samples = sampler.getElements();
 
         long start = System.currentTimeMillis();
-        for (Integer rand : sampler.getElements()) {
+        for (Integer rand : samples) {
             tree.add(rand);
         }
         long time = System.currentTimeMillis() - start;
