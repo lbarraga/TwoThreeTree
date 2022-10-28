@@ -11,7 +11,7 @@ public class TwoThreeTreeBenchMarker {
     public static final Random RG = new Random();
 
     public static void main(String[] args) {
-        meanTimeAddNRandoms(1_000_000, 5);
+        meanTimeAddNRandoms(10_000_000, 5);
     }
 
     public static void timeAdd_10_000_Randoms(){

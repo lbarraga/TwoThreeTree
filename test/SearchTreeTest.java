@@ -45,7 +45,7 @@ public interface SearchTreeTest {
     @Test
     default void addMultiple() {
         SearchTree<Integer> tree = createTree();
-        int n = 5_000_000;
+        int n = 9;
         for (int i = 0; i < n; i++) {
             assertTrue(tree.add(i));
         }
@@ -136,10 +136,11 @@ public interface SearchTreeTest {
     default void iterator() {
         SearchTree<Integer> tree = createTree();
         List<Integer> expected = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             assertTrue(tree.add(i), String.format("should change when adding %d", i));
             expected.add(i);
         }
+        System.out.println(tree);
         assertIterableEquals(expected, tree);
     }
 

@@ -25,6 +25,31 @@ public class Node<E extends Comparable<E>> {
         return middleChild;
     }
 
+    public void setChild(Node<E> newNode){
+        E o = newNode.leftValue;
+        if (hasLeftValue() && leftValue.compareTo(o) > 0) {
+            leftChild = newNode;
+        } else if (hasRightValue() && rightValue.compareTo(o) < 0) {
+            rightChild = newNode;
+        } else {
+            middleChild = newNode;
+        }
+    }
+
+    public void removeEmptyChild(){ // empty == (null, null)
+        if (leftChild.isEmpty()){
+            leftChild = null;
+        } else if (middleChild.isEmpty()){
+            middleChild = null;
+        } else {
+            rightChild = null;
+        }
+    }
+
+    public boolean isEmpty(){
+        return leftValue == null && rightValue == null;
+    }
+
     public boolean hasValue(E o) {
         return (hasLeftValue() && leftValue.compareTo(o) == 0)
                 || (hasRightValue() && rightValue.compareTo(o) == 0);
@@ -102,19 +127,6 @@ public class Node<E extends Comparable<E>> {
             convertToBinaryFromLeft();
         } else {
             convertToBinaryFromMiddle();
-        }
-    }
-
-
-
-    public void setChild(Node<E> newNode){
-        E o = newNode.leftValue;
-        if (hasLeftValue() && leftValue.compareTo(o) > 0) {
-            leftChild = newNode;
-        } else if (hasRightValue() && rightValue.compareTo(o) < 0) {
-            rightChild = newNode;
-        } else {
-            middleChild = newNode;
         }
     }
 

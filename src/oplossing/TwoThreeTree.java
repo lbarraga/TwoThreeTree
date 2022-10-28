@@ -81,15 +81,17 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         Node<E> verwijderNode = current;
 
         // Vervang current node door de kleinste value in de rechter of middelste boom
+        Node<E> parent = current;
         current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
         while (current.leftChild != null){
-            current = current.leftChild;
+            parent = current;
+            current = current.leftChild; // TODO hernoemen naar leaf of zo
         }
 
         // Verwijder de waarde in het blad
         E kleinsteInDeelBoom = current.leftValue;
         current.leftValue = null;
-        current.swapValues();
+        current.swapValues(); // rechter waarde naar links
 
         // Vervang de waarde van het blad in de vervang-node
         if (verwijderNode.leftValue.compareTo(e) == 0){
@@ -98,16 +100,42 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             verwijderNode.rightValue = kleinsteInDeelBoom;
         }
 
+        // OK als er twee waardes in het blad zaten
+        if (current.hasLeftValue()){
+            return true;
+        }
+
+        // Het blad is volledig leeg. Probeer uit de parent node naar onder te duwen
+        if (parent.hasRightValue() && parent.rightValue.compareTo(kleinsteInDeelBoom) > 0){
+            current.leftValue = parent.leftValue;
+            parent.leftValue = parent.leftChild.rightValue;
+        } else {
+            current.leftValue = parent.rightValue;
+            parent.rightValue = parent.middleChild.rightValue;
+        }
+
+        if (!parent.hasLeftValue()) {
+            parent.swapValues();
+        }
+
+        // merge blad met zijn broer aan linkerkant
+        parent.leftChild.rightValue = current.leftValue;
+        // ook nog de subnodes meedoen
+        parent.middleChild = parent.rightChild;
+        parent.rightChild = null;
+
+        if (!parent.hasLeftValue()){ // geval met 2 waarden, schuif het probleem door
+            // TODO
+        }
 
 
-        // vervang door kleinste waarde in rechter deelboom
 
         return true;
     }
 
     @Override
     public void clear() {
-        this.root = null;
+        this.root = null; // thx garbage collector :)
     }
 
     @Override
@@ -124,7 +152,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         inorder(node.leftChild, list);
         list.add(node.leftValue);
         inorder(node.middleChild, list);
-        if (node.rightValue != null) {
+        if (node.hasRightValue()) {
             list.add(node.rightValue);
             inorder(node.rightChild, list);
         }
@@ -143,7 +171,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             return;
         }
 
-        stringBuilder.append("     |".repeat(indent) + "-> " + type + " " + node + "\n");
+        stringBuilder.append("     |".repeat(indent)).append("-> ").append(type).append(" ").append(node).append("\n");
 
         drawWithIndent(indent + 1, node.leftChild  , "L", stringBuilder);
         drawWithIndent(indent + 1, node.middleChild, "M", stringBuilder);
