@@ -2,7 +2,9 @@ package oplossing;
 
 import opgave.SearchTree;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
@@ -66,76 +68,85 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     @Override
     public boolean remove(E e) {
-        // Zoek de value op.
+        Stack<Node<E>> pad = new Stack<>(); // Pad tot aan de node met de te verwijderen waarde.
+
+        // Zoek de node met de te verwijderen waarde.
         Node<E> current = root;
-        Stack<Node<E>> stack = new Stack<>();
         while (current != null && !current.hasValue(e)){
-            stack.push(current);
+            pad.push(current);
             current = current.getChild(e);
         }
 
-        if (current == null){ // waarde zat er nog niet in, niets wordt verwijderd
+        if (current == null){ // De sleutel zat nog niet in de boom, en kan dus niet verwijderd worden.
             return false;
         }
+        size -= 1; // Zal nu zeker verwijderd worden
+        Node<E> verwijderNode = current; // De node met de te verwijderen sleutel.
 
-        Node<E> verwijderNode = current;
+        // Als de node met de te verwijderen sleutel geen blad is, vervang de te verwijderen
+        // waarde dan met zijn 'in-order successor'
+        if (! verwijderNode.isLeaf()) { // Todo search in aparte functie zetten
+            pad.push(current);
+            current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
+            while (current != null) { // Zoek in order successor.
+                pad.push(current); // vul pad verder aan van verwijderNode naar het vervang-blad.
+                current = current.leftChild;
+            }
 
-        // Vervang current node door de kleinste value in de rechter of middelste boom
-        Node<E> parent = current;
-        current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
-        while (current.leftChild != null){
-            parent = current;
-            current = current.leftChild; // TODO hernoemen naar leaf of zo
+            Node<E> leaf = pad.pop();
+            E successor = leaf.leftValue;
+
+            // Vervang de te verwijderen sleutel door zijn successor.
+            verwijderNode.replace(e, successor);
+            leaf.leftValue = e; // Verwisseld.
+            verwijderNode = leaf; // de leaf moet nu verwijderd worden
         }
 
-        // Verwijder de waarde in het blad
-        E kleinsteInDeelBoom = current.leftValue;
-        current.leftValue = null;
-        current.swapValues(); // rechter waarde naar links
+        // verwijderNode is nu zeker weten een blad.
+        assert verwijderNode.isLeaf();
 
-        // Vervang de waarde van het blad in de vervang-node
+        // Verwijder de sleutel in het blad.
         if (verwijderNode.leftValue.compareTo(e) == 0){
-            verwijderNode.leftValue = kleinsteInDeelBoom;
-        } else {
-            verwijderNode.rightValue = kleinsteInDeelBoom;
+            verwijderNode.leftValue = verwijderNode.rightValue;
         }
+        verwijderNode.rightValue = null;
 
-        // OK als er twee waardes in het blad zaten
-        if (current.hasLeftValue()){
-            return true;
-        }
-
-        // Het blad is volledig leeg. Probeer uit de parent node naar onder te duwen
-        if (parent.hasRightValue() && parent.rightValue.compareTo(kleinsteInDeelBoom) > 0){
-            current.leftValue = parent.leftValue;
-            parent.leftValue = parent.leftChild.rightValue;
-        } else {
-            current.leftValue = parent.rightValue;
-            parent.rightValue = parent.middleChild.rightValue;
-        }
-
-        if (!parent.hasLeftValue()) {
-            parent.swapValues();
-        }
-
-        // merge blad met zijn broer aan linkerkant
-        parent.leftChild.rightValue = current.leftValue;
-        // ook nog de subnodes meedoen
-        parent.middleChild = parent.rightChild;
-        parent.rightChild = null;
-
-        if (!parent.hasLeftValue()){ // geval met 2 waarden, schuif het probleem door
-            // TODO
+        if (verwijderNode.hasLeftValue()){ // Er waren twee nodes. De boom is dus nog steeds een geldige 2-3-boom
+            return true; // Verwijderen gelukt.
         }
 
 
+        // verwijderNode heeft maar één sleutel.
+        // We proberen de node met zijn broers te re-distribueren. Is dit niet mogelijk, dan mergen we ze
+
+        Node<E> parent; // Parent van de leaf node
+        while (!pad.isEmpty()) {
+            parent = pad.pop();
+
+            if (parent.redistribute(verwijderNode)) {
+                return true; // Herdistributie is gelukt
+            }
+
+            // De siblings kunnen niet geherdistribueerd worden en zullen moeten mergen.
+            if (parent.numberOfKeys() == 2) {
+                parent.mergeIntoChild(verwijderNode);
+                return true;
+            }
+
+            // er zijn maar twee sleutels over in deze deelboom, het probleem wordt naar boven geduwd.
+            parent.geval2nodes(verwijderNode);
+
+            verwijderNode = parent;
+        }
+
+        this.root = verwijderNode.middleChild;
 
         return true;
     }
 
     @Override
     public void clear() {
-        this.root = null; // thx garbage collector :)
+        this.root = new Node<>(null, null); // thx garbage collector :)
     }
 
     @Override

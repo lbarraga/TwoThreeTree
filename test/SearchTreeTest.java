@@ -119,16 +119,16 @@ public interface SearchTreeTest {
     default void myRemoveMultiple(){
         SearchTree<Integer>tree = createTree();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 16; i++) {
             assertTrue(tree.add(i), String.format("should change when adding %d", i));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 16; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
         System.out.println(tree);
-        assertTrue(tree.remove(5), String.format("should change when removing %d", 5));
+        assertTrue(tree.remove(6), String.format("should change when removing %d", 5));
         System.out.println(tree);
-        assertFalse(tree.contains(5), String.format("should not contain %d anymore", 5));
+        assertFalse(tree.contains(6), String.format("should not contain %d anymore", 5));
         // assertEquals(0, tree.size(), "should be empty");
     }
 
