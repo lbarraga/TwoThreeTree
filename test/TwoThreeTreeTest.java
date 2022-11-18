@@ -16,9 +16,9 @@ public class TwoThreeTreeTest implements SearchTreeTest {
     }
 
     @Override
-    public void addRandoms(int n, int range) {
+    public void addRandoms(int n) {
         TwoThreeTree<Integer> tree = new TwoThreeTree<>();
-        List<Integer> randoms = randomArrayList(n, range);
+        List<Integer> randoms = randomArrayList(n);
         for (Integer random : randoms) {
             tree.add(random);
         }

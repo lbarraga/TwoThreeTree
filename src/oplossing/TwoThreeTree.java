@@ -146,12 +146,16 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     @Override
     public void clear() {
+        size = 0;
         this.root = new Node<>(null, null); // thx garbage collector :)
     }
 
     @Override
     public Iterator<E> iterator() {
         List<E> valueList = new ArrayList<>();
+        if (root.isEmpty()) {
+            return valueList.iterator();
+        }
         inorder(root, valueList);
         return valueList.listIterator();
     }
