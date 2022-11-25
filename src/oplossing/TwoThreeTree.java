@@ -103,7 +103,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         }
 
         // verwijderNode is nu zeker weten een blad.
-        assert verwijderNode.isLeaf();
+        assert verwijderNode.isLeaf(); // TODO weghalen
 
         // Verwijder de sleutel in het blad.
         if (verwijderNode.leftValue.compareTo(e) == 0){
@@ -139,7 +139,9 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             verwijderNode = parent;
         }
 
-        this.root = verwijderNode.middleChild;
+        if (verwijderNode.middleChild != null){
+            this.root = verwijderNode.middleChild;
+        }
 
         return true;
     }

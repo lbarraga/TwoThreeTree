@@ -1,5 +1,6 @@
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
+import oplossing.TwoThreeTree;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -13,12 +14,14 @@ public interface SearchTreeTest {
     Random RG = new Random(2);
 
     SearchTree<Integer> createTree();
+    void assertIntegrity(SearchTree<Integer> tree);
 
     @Test
     default void empty() {
         SearchTree<Integer> tree = createTree();
         assertEquals(0, tree.size());
         assertTrue(tree.isEmpty());
+        assertIntegrity(tree);
     }
 
     @Test
@@ -29,12 +32,29 @@ public interface SearchTreeTest {
         tree.add(1);
         assertTrue(tree.contains(1));
         assertEquals(1, tree.size());
+        assertIntegrity(tree);
+    }
+
+    @Test
+    default void removeOnEmptyAndAddOne() {
+        SearchTree<Integer> tree = createTree();
+        int n = 100;
+        for (int i = 0; i < n; i++) {
+            assertFalse(tree.remove(i));
+        }
+        for (int i = 0; i < n; i++) {
+            assertFalse(tree.contains(i), String.format("should not contain %d", i));
+        }
+        assertIntegrity(tree);
+        assertTrue(tree.add(2));
+        assertTrue(tree.contains(2));
+        assertIntegrity(tree);
     }
 
     @Test
     default void removeOne() {
         SearchTree<Integer>tree = createTree();
-
+        assertIntegrity(tree);
         assertFalse(tree.contains(1));
         tree.add(1);
         assertTrue(tree.contains(1));
@@ -42,18 +62,21 @@ public interface SearchTreeTest {
         assertFalse(tree.contains(1));
         assertEquals(0, tree.size());
         assertTrue(tree.isEmpty());
+        assertTrue(tree.add(1));
+        assertIntegrity(tree);
     }
 
     @Test
     default void addMultiple() {
         SearchTree<Integer> tree = createTree();
-        int n = 10_000_000;
+        int n = 5_000_000;
         for (int i = 0; i < n; i++) {
             assertTrue(tree.add(i));
         }
         for (int i = 0; i < n; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
+        assertIntegrity(tree);
     }
 
     @Test
@@ -66,7 +89,7 @@ public interface SearchTreeTest {
         for (int i = 0; i < 10; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
-        System.out.println(tree);
+        assertIntegrity(tree);
     }
 
     @Test
@@ -106,6 +129,7 @@ public interface SearchTreeTest {
             assertFalse(tree.contains(i), String.format("should not contain %d anymore", i));
         }
         assertEquals(0, tree.size(), "should be empty");
+        assertIntegrity(tree);
     }
 
     @Test
@@ -122,7 +146,7 @@ public interface SearchTreeTest {
         assertTrue(tree.remove(6), String.format("should change when removing %d", 5));
         System.out.println(tree);
         assertFalse(tree.contains(6), String.format("should not contain %d anymore", 5));
-        // assertEquals(0, tree.size(), "should be empty");
+        assertIntegrity(tree);
     }
 
     @Test
@@ -135,6 +159,7 @@ public interface SearchTreeTest {
         }
         System.out.println(tree);
         assertIterableEquals(expected, tree);
+        assertIntegrity(tree);
     }
 
     @Test
@@ -146,8 +171,8 @@ public interface SearchTreeTest {
             assertTrue(tree.add(i), String.format("should change when adding %d", i));
             expected.add(i);
         }
-        // System.out.println(tree);
         assertIterableEquals(expected.stream().sorted().toList(), tree);
+        assertIntegrity(tree);
     }
 
     @Test
@@ -181,6 +206,7 @@ public interface SearchTreeTest {
             }
             assertEquals(size, tree.size());
             assertIterableEquals(hashSet.stream().sorted().toList(), tree);
+            assertIntegrity(tree);
         }
     }
 
@@ -195,6 +221,7 @@ public interface SearchTreeTest {
         }
         expected.sort(Comparator.comparingInt(value -> value)); // sorteer de lijst.
         assertIterableEquals(expected, tree);
+        assertIntegrity(tree);
     }
 
     default void addRandoms(int n) {
@@ -207,5 +234,6 @@ public interface SearchTreeTest {
         for (Integer random : randoms) {
             assertTrue(tree.contains(random), String.format("should contain %d", random));
         }
+        assertIntegrity(tree);
     }
 }

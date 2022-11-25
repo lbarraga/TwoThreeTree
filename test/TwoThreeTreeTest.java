@@ -16,17 +16,8 @@ public class TwoThreeTreeTest implements SearchTreeTest {
     }
 
     @Override
-    public void addRandoms(int n) {
-        TwoThreeTree<Integer> tree = new TwoThreeTree<>();
-        List<Integer> randoms = randomArrayList(n);
-        for (Integer random : randoms) {
-            tree.add(random);
-        }
-
-        for (Integer random : randoms) {
-            assertTrue(tree.contains(random), String.format("should contain %d", random));
-        }
-        assertTrue(is23Tree(tree), "Tree is not a 23Tree");
+    public void assertIntegrity(SearchTree<Integer> tree) {
+        assertTrue(is23Tree((TwoThreeTree<Integer>) tree), "Boom is geen 2-3-boom.");
     }
 
     public boolean is23Tree(TwoThreeTree<Integer> tree){
