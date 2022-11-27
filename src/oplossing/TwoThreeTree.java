@@ -2,14 +2,13 @@ package oplossing;
 
 import opgave.SearchTree;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     private int size = 0;
-    public Node<E> root = new Node<>(null, null); // Er is bij aanvang nog geen root node
+    public Node233<E> root = new Node233<>(null, null); // Er is bij aanvang nog geen root node
 
     @Override
     public int size() {
@@ -23,7 +22,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     @Override
     public boolean contains(E o) {
-        Node<E> node = root;
+        Node233<E> node = root;
         while (node != null && !node.hasValue(o)) {
             node = node.getChild(o);
         }
@@ -33,8 +32,8 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     @Override
     public boolean add(E o) {
 
-        Stack<Node<E>> stack = new Stack<>(); // Stack met de doorlopen nodes.
-        Node<E> node = root;
+        Stack<Node233<E>> stack = new Stack<>(); // Stack met de doorlopen nodes.
+        Node233<E> node = root;
         while (node  != null && ! node.hasValue(o)) {
             stack.push(node);
             node = node.getChild(o); // daal af in de boom
@@ -45,7 +44,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         }
 
         // Toevoegen van de waarde o. Dit maakt van de 2-3-boom een bijna-2-3-boom.
-        Node<E> newNode = new Node<>(o, null);
+        Node233<E> newNode = new Node233<>(o, null);
         stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
         this.size += 1;
 
@@ -54,7 +53,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         // Wanneer dit plaatsje vrij is, percoleer je de huidige node naar boven.
         node = newNode;
         while (!stack.isEmpty() && stack.peek().hasRightValue()) {
-            Node<E> parent = stack.pop();
+            Node233<E> parent = stack.pop();
             parent.convertToBinary(o); // Maak een kleine binaire boom van de node
             node = parent;
         }
@@ -68,10 +67,10 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     @Override
     public boolean remove(E e) {
-        Stack<Node<E>> pad = new Stack<>(); // Pad tot aan de node met de te verwijderen waarde.
+        Stack<Node233<E>> pad = new Stack<>(); // Pad tot aan de node met de te verwijderen waarde.
 
         // Zoek de node met de te verwijderen waarde.
-        Node<E> current = root;
+        Node233<E> current = root;
         while (current != null && !current.hasValue(e)){
             pad.push(current);
             current = current.getChild(e);
@@ -81,7 +80,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             return false;
         }
         size -= 1; // Zal nu zeker verwijderd worden
-        Node<E> verwijderNode = current; // De node met de te verwijderen sleutel.
+        Node233<E> verwijderNode = current; // De node met de te verwijderen sleutel.
 
         // Als de node met de te verwijderen sleutel geen blad is, vervang de te verwijderen
         // waarde dan met zijn 'in-order successor'
@@ -93,7 +92,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
                 current = current.leftChild;
             }
 
-            Node<E> leaf = pad.pop();
+            Node233<E> leaf = pad.pop();
             E successor = leaf.leftValue;
 
             // Vervang de te verwijderen sleutel door zijn successor.
@@ -119,7 +118,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         // verwijderNode heeft maar één sleutel.
         // We proberen de node met zijn broers te re-distribueren. Is dit niet mogelijk, dan mergen we ze
 
-        Node<E> parent; // Parent van de leaf node
+        Node233<E> parent; // Parent van de leaf node
         while (!pad.isEmpty()) {
             parent = pad.pop();
 
@@ -149,7 +148,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     @Override
     public void clear() {
         size = 0;
-        this.root = new Node<>(null, null); // thx garbage collector :)
+        this.root = new Node233<>(null, null); // thx garbage collector :)
     }
 
     @Override
@@ -162,7 +161,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         return valueList.listIterator();
     }
 
-    private void inorder(Node<E> node, List<E> list) {
+    private void inorder(Node233<E> node, List<E> list) {
         if (node == null){
             return;
         }
@@ -183,7 +182,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         return builder.toString();
     }
 
-    private void drawWithIndent(int indent, Node<E> node, String type, StringBuilder stringBuilder) {
+    private void drawWithIndent(int indent, Node233<E> node, String type, StringBuilder stringBuilder) {
         if (node == null) {
             return;
         }

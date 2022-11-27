@@ -1,5 +1,6 @@
 import opgave.SearchTree;
 import oplossing.Node;
+import oplossing.Node233;
 import oplossing.TwoThreeTree;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class TwoThreeTreeTest implements SearchTreeTest {
         return allNodesSameHeightHulp(tree.root, 0);
     }
 
-    private boolean allNodesSameHeightHulp(Node<Integer> node, int level) {
+    private boolean allNodesSameHeightHulp(Node233<Integer> node, int level) {
         if (node == null) {
             return true;
         }
@@ -60,7 +61,7 @@ public class TwoThreeTreeTest implements SearchTreeTest {
                 && (node.rightValue == null || allNodesSameHeightHulp(node.rightChild, level + 1));
     }
 
-    private boolean isLeaf(Node<Integer> node){
+    private boolean isLeaf(Node233<Integer> node){
         return node.leftChild == null && node.rightChild == null && node.middleChild == null;
     }
 

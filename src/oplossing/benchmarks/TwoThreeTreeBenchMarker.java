@@ -1,6 +1,8 @@
 package oplossing.benchmarks;
 
 import opgave.samplers.Sampler;
+import oplossing.BottomUpSemiSplayTwoThreeTree;
+import oplossing.Ss233Node;
 import oplossing.TwoThreeTree;
 
 import java.util.List;
