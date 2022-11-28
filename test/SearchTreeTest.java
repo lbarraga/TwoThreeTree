@@ -99,20 +99,21 @@ public interface SearchTreeTest {
     @Test
     default void addMultipleDescending() {
         SearchTree<Integer> tree = createTree();
-
-        for (int i = 10; i >= 0; i--) {
+        int n = 100;
+        for (int i = n; i >= 0; i--) {
             assertTrue(tree.add(i));
             assertTrue(tree.contains(i), String.format("should contain %d :)", i));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < n; i++) {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
         assertIntegrity(tree);
+        System.out.println(tree);
     }
 
     @Test
     default void addFewRandoms() {
-        addRandoms(10);
+        addRandoms(4);
     }
 
     @Test
@@ -246,7 +247,7 @@ public interface SearchTreeTest {
         int i = 1;
         for (Integer random : randoms) {
             tree.add(random);
-            System.out.println(i++);
+            //System.out.println(i++);
         }
 
         System.out.println(tree);

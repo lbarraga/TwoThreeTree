@@ -1,5 +1,6 @@
 package oplossing.benchmarks;
 
+import opgave.SearchTree;
 import opgave.samplers.Sampler;
 import oplossing.BottomUpSemiSplayTwoThreeTree;
 import oplossing.Ss233Node;
@@ -13,17 +14,13 @@ public class TwoThreeTreeBenchMarker {
     public static final Random RG = new Random();
 
     public static void main(String[] args) {
-        meanTimeAddNRandoms(10_000_000, 5);
-    }
-
-    public static void timeAdd_10_000_Randoms(){
-        timeAddNRandoms(10_000);
+        meanTimeAddNRandoms(1_000_000, 5);
     }
 
     public static double timeAddNRandoms(int n) {
         Sampler sampler = new Sampler(RG, n);
-        TwoThreeTree<Integer> tree = new TwoThreeTree<>();
         List<Integer> samples = sampler.getElements();
+        SearchTree<Integer> tree = new BottomUpSemiSplayTwoThreeTree<>();
 
         long start = System.currentTimeMillis();
         for (Integer rand : samples) {

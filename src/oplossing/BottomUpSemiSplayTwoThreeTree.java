@@ -7,7 +7,7 @@ import java.util.*;
 public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements SearchTree<E> {
 
     public int size = 0;
-    public Ss233Node<E> root = new Ss233Node<>(null, null);
+    public Ss233Node<E> root = null;
 
     @Override
     public int size() {
@@ -43,8 +43,8 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         this.size += 1;
 
         // Toevoegen van de waarde o.
-        if (root != null && root.isEmpty()) {
-            root.leftValue = o;
+        if (root == null) {
+            root = new Ss233Node<>(o, null);
             return true;
         }
         if (!stack.peek().hasRightValue() && stack.peek().leftValue.compareTo(o) < 0) {
@@ -61,7 +61,6 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
     }
 
     private void splay(Stack<Ss233Node<E>> splayPad) {
-        System.out.println(splayPad);
         while (splayPad.size() >= 3) {
             Ss233Node<E> third = splayPad.pop();
             Ss233Node<E> second = splayPad.pop();
@@ -72,70 +71,76 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         }
     }
 
+    /**
+     * Globaal idee van splay-bewerking:
+     * 1. Haal alle waarden (3 tot 6) uit de drie toppen en stop ze in een nieuwe toppen structuur:
+     *           [ B D ]
+     *          /   |   \
+     *        [A]  [C]  [E F]
+     * 2. Voeg de kinderen van de toppen in volgorde toe aan [A], [C] en [E F]
+     * @param first de eerste top in het splay pad van 3 toppen groot
+     * @param second de tweede top
+     * @param third de derde top
+     * @param parent de parent van de eerste top, gebruikt om de nieuwe toppen structuur terug aan de boom te hechten.
+     */
     public void splayOne(Ss233Node<E> first, Ss233Node<E> second, Ss233Node<E> third, Ss233Node<E> parent) {
-        Queue<E> values = new PriorityQueue<>();
+        Queue<E> values = new PriorityQueue<>(); // gebruikt om de waardes op volgorde uit de toppen te halen.
+        // gebruikt om kinderen uit de toppen te halen (stack om null-waarden toe te laten)
         Stack<Ss233Node<E>> children = new Stack<>();
-        Queue<Ss233Node<E>> nodes = new PriorityQueue<>(Comparator.comparing(n -> n.leftValue));
-        nodes.addAll(List.of(first, second, third));
 
         // Haal de kinderen (geen null kinderen en geen kind dat gelijk is aan first, second of third)
         extractToChildren(first, second, third, children);
-
-        // Zorg ervoor dat first < second < third. In verslag zeggen waarom geen prio queue
-        first = nodes.remove();
-        second = nodes.remove();
-        third = nodes.remove();
 
         // Haal Waarden op volgorde uit de nodes
         extractIntoValues(first, values);
         extractIntoValues(second, values);
         extractIntoValues(third, values);
 
+        // De nieuwe structuur van de nodes (zoals te zien in documentatie)
+        Ss233Node<E> newParent = new Ss233Node<>(null, null);
+        //Ss233Node<E> newChild1 = new Ss233Node<>(null, null);
+        //Ss233Node<E> newChild2 = new Ss233Node<>(null, null);
+        //Ss233Node<E> newChild3 = new Ss233Node<>(null, null);
+        newParent.leftChild = first;
+        newParent.middleChild = second;
+        newParent.rightChild = third;
 
-//        extractIntoChildren(third, first, second, children);
-//        extractIntoChildren(second, first, third, children);
-//        extractIntoChildren(first, second, third, children);
+        // values op null zetten
+        first.leftValue = null;
+        first.rightValue = null;
+        second.leftValue = null;
+        second.rightValue = null;
+        third.leftValue = null;
+        third.rightValue = null;
 
-
-        // De nieuwe structuur van de nodes
-        Ss233Node<E> new1 = new Ss233Node<>(null, null);
-        Ss233Node<E> new2 = new Ss233Node<>(null, null);
-        Ss233Node<E> new3 = new Ss233Node<>(null, null);
-        Ss233Node<E> new4 = new Ss233Node<>(null, null);
-        new1.leftChild = new2;
-        new1.middleChild = new3;
-        new1.rightChild = new4;
-
-        System.out.println("values: " + values);
         // vullen van de values in de nodes
+        System.out.println("Values: " + values);
         Stack<Ss233Node<E>> positions = new Stack<>();
-        positions.addAll(List.of(new4, new4, new1, new3, new1, new2));
+        positions.addAll(List.of(third, third, newParent, first, newParent, first));
         while (!positions.isEmpty() && !values.isEmpty()) {
             positions.pop().setSplayValue(values.remove());
         }
 
-//        System.out.println("===============");
-//        while (!children.isEmpty()){
-//            System.out.println(children.pop());
-//        }
-//        System.out.println("===============");
+        System.out.println("Children: " + children);
+        setSplayChilds(first, children); // voeg de kinderen toe aan newChild1
+        setSplayChilds(second, children); // Voeg de kinderen toe aan newChild2
+        yeet(third, children); // Voeg de kinderen toe aan newChild3
 
-        System.out.println(children.size());
-        System.out.println(children);
-
-        setSplayChilds(new2, children);
-        setSplayChilds(new3, children);
-        yeet(new4, children);
-
-        if (new1.rightChild.isEmpty()){
-            new1.rightChild = new1.rightChild.leftChild;
+        // Wanneer er 4 nodes en 5 children zijn doet het probleem zich voor dat
+        // dat het linkerkind van newChild4 (EF in docs) het vijfde kind is.
+        // Dit kan makkelijk opgelost worden door dat linkerkind de nieuwe Child4 te maken
+        if (newParent.rightChild.isEmpty()){
+            newParent.rightChild = newParent.rightChild.leftChild;
         }
 
+        // Wanneer De eerste 3 nodes van de boom ge-splayed zijn is er geen parent waaraan
+        // de nieuwe toppen aan gehecht kunnen worden, dus wordt newParent de nieuwe root
         if (parent == null){
-            root = new1;
+            root = newParent;
             return;
         }
-        parent.setChild(new1);
+
+        parent.setChild(newParent);
     }
 
     private void extractToChildren(Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
@@ -148,7 +153,6 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
 
     private void extractOneToChildren(Ss233Node<E> child, Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
         if (child != other1 && child != other2) {
-            System.out.println("pushed " + child + " from " + node);
             children.push(child);
         } else if (child == other1) {
             extractToChildren(other1, node, other2, children);
@@ -160,7 +164,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
     private void setSplayChilds(Ss233Node<E> node, Stack<Ss233Node<E>> children) {
         node.leftChild = safePop(children);
         node.middleChild = safePop(children);
-        if (node.hasRightValue()){ // TODO weg
+        if (node.hasRightValue()){
             node.rightChild = safePop(children);
         }
     }
@@ -186,14 +190,6 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         if (child != other1 && child != other2) {
             children.push(child);
         }
-    }
-
-    private void extractIntoChildren(Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
-        if (node.hasRightValue()){
-            extractChildIntoChildren(node.rightChild, other1, other2, children);
-        }
-        extractChildIntoChildren(node.middleChild, other1, other2, children);
-        extractChildIntoChildren(node.leftChild, other1, other2, children);
     }
 
     @Override
