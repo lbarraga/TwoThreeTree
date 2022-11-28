@@ -89,39 +89,30 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         Stack<Ss233Node<E>> children = new Stack<>();
 
         // Haal de kinderen (geen null kinderen en geen kind dat gelijk is aan first, second of third)
-        extractToChildren(first, second, third, children);
-
-        // Haal Waarden op volgorde uit de nodes
-        extractIntoValues(first, values);
-        extractIntoValues(second, values);
-        extractIntoValues(third, values);
+        // en stop ze in children. Terwijl de toppen bezocht worden, steek ook de sleutels in values
+        extractFromNodes(first, second, third, children, values);
 
         // De nieuwe structuur van de nodes (zoals te zien in documentatie)
         Ss233Node<E> newParent = new Ss233Node<>(null, null);
-        //Ss233Node<E> newChild1 = new Ss233Node<>(null, null);
-        //Ss233Node<E> newChild2 = new Ss233Node<>(null, null);
-        //Ss233Node<E> newChild3 = new Ss233Node<>(null, null);
         newParent.leftChild = first;
         newParent.middleChild = second;
         newParent.rightChild = third;
 
         // values op null zetten
-        first.leftValue = null;
-        first.rightValue = null;
-        second.leftValue = null;
+        first.leftValue   = null;
+        first.rightValue  = null;
+        second.leftValue  = null;
         second.rightValue = null;
-        third.leftValue = null;
-        third.rightValue = null;
+        third.leftValue   = null;
+        third.rightValue  = null;
 
         // vullen van de values in de nodes
-        System.out.println("Values: " + values);
         Stack<Ss233Node<E>> positions = new Stack<>();
-        positions.addAll(List.of(third, third, newParent, first, newParent, first));
+        positions.addAll(List.of(third, third, newParent, second, newParent, first));
         while (!positions.isEmpty() && !values.isEmpty()) {
             positions.pop().setSplayValue(values.remove());
         }
 
-        System.out.println("Children: " + children);
         setSplayChilds(first, children); // voeg de kinderen toe aan newChild1
         setSplayChilds(second, children); // Voeg de kinderen toe aan newChild2
         yeet(third, children); // Voeg de kinderen toe aan newChild3
@@ -143,30 +134,30 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         parent.setChild(newParent);
     }
 
-    private void extractToChildren(Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
+    private void extractFromNodes(Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children, Queue<E> values) {
+        values.add(node.leftValue);
         if (node.hasRightValue()) {
-            extractOneToChildren(node.rightChild, node, other1, other2, children);
+            values.add(node.rightValue);
+            extractOneToChildren(node.rightChild, node, other1, other2, children, values);
         }
-        extractOneToChildren(node.middleChild, node, other1, other2, children);
-        extractOneToChildren(node.leftChild, node, other1, other2, children);
+        extractOneToChildren(node.middleChild, node, other1, other2, children, values);
+        extractOneToChildren(node.leftChild, node, other1, other2, children, values);
     }
 
-    private void extractOneToChildren(Ss233Node<E> child, Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
+    private void extractOneToChildren(Ss233Node<E> child, Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children, Queue<E> values) {
         if (child != other1 && child != other2) {
             children.push(child);
         } else if (child == other1) {
-            extractToChildren(other1, node, other2, children);
+            extractFromNodes(other1, node, other2, children, values);
         } else {
-            extractToChildren(other2, node, other1, children);
+            extractFromNodes(other2, node, other1, children, values);
         }
     }
 
     private void setSplayChilds(Ss233Node<E> node, Stack<Ss233Node<E>> children) {
         node.leftChild = safePop(children);
         node.middleChild = safePop(children);
-        if (node.hasRightValue()){
-            node.rightChild = safePop(children);
-        }
+        node.rightChild = null;
     }
 
     private void yeet(Ss233Node<E> node, Stack<Ss233Node<E>> children){
@@ -177,19 +168,6 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
 
     private Ss233Node<E> safePop(Stack<Ss233Node<E>> children) {
         return children.isEmpty() ? null : children.pop();
-    }
-
-    private void extractIntoValues(Ss233Node<E> node, Queue<E> values) {
-        values.add(node.leftValue);
-        if (node.rightValue != null) {
-            values.add(node.rightValue);
-        }
-    }
-
-    private void extractChildIntoChildren(Ss233Node<E> child, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children) {
-        if (child != other1 && child != other2) {
-            children.push(child);
-        }
     }
 
     @Override

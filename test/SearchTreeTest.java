@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public interface SearchTreeTest {
 
 
-    Random RG = new Random(1);
+    Random RG = new Random(30);
 
     SearchTree<Integer> createTree();
     void assertIntegrity(SearchTree<Integer> tree);
@@ -83,7 +83,7 @@ public interface SearchTreeTest {
     @Test
     default void addList() {
         SearchTree<Integer> tree = createTree();
-        List<Integer> l = List.of(3, 2, 5, 4, 1, 0, -1, -2, 6, -3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, -4);
+        List<Integer> l = List.of(6, 9, 1, 10, 8, 7);
         for (Integer e : l) {
             assertTrue(tree.add(e));
             System.out.println(tree);
@@ -113,7 +113,10 @@ public interface SearchTreeTest {
 
     @Test
     default void addFewRandoms() {
-        addRandoms(4);
+        for (int i = 1; i < 30; i++) {
+            System.out.println("========== " + i + " =============");
+            addRandoms(i);
+        }
     }
 
     @Test
@@ -247,10 +250,9 @@ public interface SearchTreeTest {
         int i = 1;
         for (Integer random : randoms) {
             tree.add(random);
-            //System.out.println(i++);
         }
 
-        System.out.println(tree);
+        //System.out.println(tree);
         for (Integer random : randoms) {
             assertTrue(tree.contains(random), String.format("should contain %d", random));
         }
