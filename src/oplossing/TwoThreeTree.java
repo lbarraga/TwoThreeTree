@@ -175,6 +175,16 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
     }
 
+    public int maxDepth(Node233<E> node) {
+        if (node == null) {
+            return 0;
+        }
+        int links  = 1 + maxDepth(node.leftChild);
+        int midden = 1 + maxDepth(node.middleChild);
+        int rechts = 1 + maxDepth(node.rightChild);
+        return Math.max(links, Math.max(midden, rechts));
+    }
+
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();

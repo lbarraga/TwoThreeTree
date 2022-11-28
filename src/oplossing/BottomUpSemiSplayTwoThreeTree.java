@@ -1,6 +1,7 @@
 package oplossing;
 
 import opgave.SearchTree;
+import oplossing.benchmarks.TwoThreeTreeBenchMarker;
 
 import java.util.*;
 
@@ -21,10 +22,13 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
 
     @Override
     public boolean contains(E o) {
+        Stack<Ss233Node<E>> splayPad = new Stack<>();
         Ss233Node<E> node = root;
         while (node != null && !node.hasValue(o)) {
+            splayPad.push(node);
             node = node.getChild(o);
         }
+        splay(splayPad);
         return node != null;
     }
 
@@ -34,6 +38,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         Ss233Node<E> node = root;
         while (node  != null && ! node.hasValue(o)) {
             stack.push(node);
+            TwoThreeTreeBenchMarker.visited += 1;
             node = node.getChild(o); // daal af in de boom
         }
 
@@ -52,6 +57,13 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         } else {
             Ss233Node<E> newNode = new Ss233Node<>(o, null);
             stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
+            if (stack.peek().leftChild == newNode) {
+                stack.peek().redistribute1();
+            } else if (stack.peek().rightChild == newNode) {
+                stack.peek().redistribute2();
+            } else if (stack.peek().middleChild == newNode) {
+                stack.peek().redistribute3();
+            }
             stack.push(newNode);
         }
 
@@ -60,11 +72,16 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         return true;
     }
 
+    /**
+     * Voer een splay-bewerking uit op een meegegeven splay pad
+     * @param splayPad het pad waarover gesplayed moet worden
+     */
     private void splay(Stack<Ss233Node<E>> splayPad) {
         while (splayPad.size() >= 3) {
             Ss233Node<E> third = splayPad.pop();
             Ss233Node<E> second = splayPad.pop();
             Ss233Node<E> first = splayPad.pop();
+            // parent wordt gebruikt om later terug aan het pad te kunnen hechten
             Ss233Node<E> parent = splayPad.isEmpty() ? null : splayPad.pop();
 
             splayOne(first, second, third, parent);
@@ -84,7 +101,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
      * @param parent de parent van de eerste top, gebruikt om de nieuwe toppen structuur terug aan de boom te hechten.
      */
     public void splayOne(Ss233Node<E> first, Ss233Node<E> second, Ss233Node<E> third, Ss233Node<E> parent) {
-        Queue<E> values = new PriorityQueue<>(); // gebruikt om de waardes op volgorde uit de toppen te halen.
+        Queue<E> values = new PriorityQueue<>(); // Gebruikt om de waardes op volgorde uit de toppen te halen.
         // gebruikt om kinderen uit de toppen te halen (stack om null-waarden toe te laten)
         Stack<Ss233Node<E>> children = new Stack<>();
 
@@ -98,24 +115,17 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         newParent.middleChild = second;
         newParent.rightChild = third;
 
-        // values op null zetten
-        first.leftValue   = null;
-        first.rightValue  = null;
-        second.leftValue  = null;
-        second.rightValue = null;
-        third.leftValue   = null;
-        third.rightValue  = null;
-
-        // vullen van de values in de nodes
+        // vullen van de values in de nodes, in volgende volgorde: A B C D E F (zie docstring)
+        // Het is niet per se sneller wanneer dit uitdrukkelijk onder elkaar geschreven wordt zonder Stack.
         Stack<Ss233Node<E>> positions = new Stack<>();
         positions.addAll(List.of(third, third, newParent, second, newParent, first));
         while (!positions.isEmpty() && !values.isEmpty()) {
             positions.pop().setSplayValue(values.remove());
         }
 
-        setSplayChilds(first, children); // voeg de kinderen toe aan newChild1
-        setSplayChilds(second, children); // Voeg de kinderen toe aan newChild2
-        yeet(third, children); // Voeg de kinderen toe aan newChild3
+        setSingleKeyedChild(first, children); // voeg de kinderen toe aan newChild1
+        setSingleKeyedChild(second, children); // Voeg de kinderen toe aan newChild2
+        setTwoKeyedChild(third, children); // Voeg de kinderen toe aan newChild3
 
         // Wanneer er 4 nodes en 5 children zijn doet het probleem zich voor dat
         // dat het linkerkind van newChild4 (EF in docs) het vijfde kind is.
@@ -134,16 +144,36 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         parent.setChild(newParent);
     }
 
+    /**
+     * Recursieve methode die gebruikt wordt om een 'wandeling' te maken rond de drie toppen, hun waarden in values te steken,
+     * hun kinderen in children te steken en de waarden op null zetten zodat de toppen opnieuw gebruikt
+     * kunnen worden voor de nieuwe toppen structuur.
+     * @param node: de node die op dit moment bekeken wordt (first, second of third)
+     * @param other1: een van de andere toppen die niet node is.
+     * @param other2: de laatste andere top die niet node is.
+     * @param children: verwijzing naar children hier de kinderen aan toe te voegen.
+     * @param values: verwijzing naar values hier de sleutelwaarden aan toe te voegen.
+     */
     private void extractFromNodes(Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children, Queue<E> values) {
         values.add(node.leftValue);
+        node.leftValue = null; // Voor hergebruik in nieuwe structuur
         if (node.hasRightValue()) {
             values.add(node.rightValue);
+            node.rightValue = null;
             extractOneToChildren(node.rightChild, node, other1, other2, children, values);
         }
         extractOneToChildren(node.middleChild, node, other1, other2, children, values);
         extractOneToChildren(node.leftChild, node, other1, other2, children, values);
     }
 
+    /**
+     * Hulpfunctie voor extractFromNodes
+     * Wanneer het te bekijken kind NIET een van de twee andere toppen is moet deze aan de kinderen worden toegevoegd.
+     * Wanneer dit wel het geval is, zet je de wandeling rond de toppen voort naar die top.
+     * Recursie in `extractFromNodes` zorgt ervoor dat de wandeling langs de andere kan ook terugkeert.
+     * @param child
+     * andere parameters: zie params van extractFromNodes
+     */
     private void extractOneToChildren(Ss233Node<E> child, Ss233Node<E> node, Ss233Node<E> other1, Ss233Node<E> other2, Stack<Ss233Node<E>> children, Queue<E> values) {
         if (child != other1 && child != other2) {
             children.push(child);
@@ -154,13 +184,13 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         }
     }
 
-    private void setSplayChilds(Ss233Node<E> node, Stack<Ss233Node<E>> children) {
-        node.leftChild = safePop(children);
-        node.middleChild = safePop(children);
+    private void setSingleKeyedChild(Ss233Node<E> node, Stack<Ss233Node<E>> children) {
+        node.leftChild = children.pop();
+        node.middleChild = children.pop();
         node.rightChild = null;
     }
 
-    private void yeet(Ss233Node<E> node, Stack<Ss233Node<E>> children){
+    private void setTwoKeyedChild(Ss233Node<E> node, Stack<Ss233Node<E>> children){
         node.leftChild = safePop(children);
         node.middleChild = safePop(children);
         node.rightChild = safePop(children);
@@ -172,7 +202,58 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
 
     @Override
     public boolean remove(E e) {
-        return false;
+        Stack<Ss233Node<E>> pad = new Stack<>(); // Pad tot aan de node met de te verwijderen waarde.
+
+        // Zoek de node met de te verwijderen waarde.
+        Ss233Node<E> current = root;
+        while (current != null && !current.hasValue(e)){
+            pad.push(current);
+            current = current.getChild(e);
+        }
+
+        if (current == null){ // De sleutel zat nog niet in de boom, en kan dus niet verwijderd worden.
+            return false;
+        }
+        size -= 1; // Zal nu zeker verwijderd worden
+        Ss233Node<E> verwijderNode = current; // De node met de te verwijderen sleutel.
+
+        // Als de node met de te verwijderen sleutel geen blad is, vervang de te verwijderen
+        // waarde dan met zijn 'in-order successor'
+        if (! verwijderNode.isLeaf()) {
+            pad.push(current);
+            current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
+            System.out.println(current);
+            while (current != null) { // Zoek in order successor.
+                pad.push(current); // vul pad verder aan van verwijderNode naar het vervang-blad.
+                current = current.leftChild;
+            }
+
+            Ss233Node<E> leaf = pad.pop();
+            E successor = leaf.leftValue;
+            System.out.println("succ " + successor);
+
+            // Vervang de te verwijderen sleutel door zijn successor.
+            verwijderNode.replace(e, successor);
+            leaf.leftValue = e; // Verwisseld.
+            verwijderNode = leaf; // de leaf moet nu verwijderd worden
+        }
+
+        // Verwijder de sleutel in het blad.
+        if (verwijderNode.leftValue.compareTo(e) == 0){
+            verwijderNode.leftValue = verwijderNode.rightValue;
+        }
+        verwijderNode.rightValue = null;
+
+        if (verwijderNode.hasLeftValue()){ // Er waren twee nodes. De boom is dus nog steeds een geldige 2-3-boom
+            return true; // Verwijderen gelukt.
+        }
+
+        if (pad.isEmpty()){
+            root = null;
+        } else {
+            pad.pop().removeChild(verwijderNode);
+        }
+        return true;
     }
 
     @Override

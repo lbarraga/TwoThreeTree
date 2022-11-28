@@ -38,6 +38,14 @@ public class Node<E extends Comparable<E>> {
         return (rightValue == null) ? 1 : 2;
     }
 
+    public void replace(E value, E with){
+        if (leftValue.compareTo(value) == 0) {
+            leftValue = with;
+        } else if (rightValue.compareTo(value) == 0){
+            rightValue = with;
+        }
+    }
+
     @Override
     public String toString(){
         return "(" + leftValue + "|" + rightValue + ")";

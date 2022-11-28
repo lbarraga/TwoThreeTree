@@ -53,4 +53,68 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
             assert false : "Setting child on node that has already 3 children"; // TODO wegdoen
         }
     }
+    public void removeChild(Ss233Node<E> child) {
+        if (leftChild == child) {
+            leftChild = null;
+        } else if (middleChild == child) {
+            middleChild = null;
+        } else if (rightChild == child) {
+            rightChild = null;
+        }
+    }
+
+    /**
+     *   [ A B ] (deze node)    [ B ]
+     *         \        ->     /     \
+     *          [ C ]        [ A ]  [ C ]
+     */
+    public void redistribute1() {
+        Ss233Node<E> linker = new Ss233Node<E>(leftValue, null);
+        linker.leftChild = leftChild;
+        linker.middleChild = middleChild;
+        leftValue = rightValue;
+        rightValue = null;
+        middleChild = rightChild;
+        rightChild = null;
+        leftChild = linker;
+    }
+
+    /**
+     *     [ B C ]          [ B ]
+     *    /          ->    /    \
+     *  [ A ]            [ A ] [ C ]
+     */
+    public void redistribute2() {
+        Ss233Node<E> rechter = new Ss233Node<>(rightValue, null);
+        rechter.leftChild = middleChild;
+        rechter.middleChild = rightChild;
+        rightValue = null;
+        rightChild = rechter;
+    }
+
+    /**
+     *     [ A C ]            [ B ]
+     *        |      ->      /     \
+     *      [ B ]          [ A ]  [ C ]
+     */
+    public void redistribute3() {
+        Ss233Node<E> linker = new Ss233Node<>(leftValue, null);
+        linker.leftChild = leftChild;
+        linker.middleChild = middleChild.leftChild;
+        Ss233Node<E> rechter = new Ss233Node<>(rightValue, null);
+        rechter.leftChild = middleChild.leftChild;
+        rechter.middleChild = rightChild;
+
+        rightValue = null;
+        rightChild = null;
+        leftValue = middleChild.leftValue;
+        leftChild = linker;
+        middleChild = rechter;
+
+    }
+
+    public boolean isLeaf(){
+        return this.leftChild == null && this.middleChild == null && this.rightChild == null;
+    }
+
 }

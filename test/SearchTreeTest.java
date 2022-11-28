@@ -1,6 +1,5 @@
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
-import oplossing.TwoThreeTree;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -77,7 +76,21 @@ public interface SearchTreeTest {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
         assertIntegrity(tree);
-        System.out.println(tree);
+        // System.out.println(tree);
+    }
+
+    @Test
+    default void addAndContainsMixed() {
+        SearchTree<Integer> tree = createTree();
+        int n = 100_000;
+        for (int i = 0; i < n; i++) {
+            assertTrue(tree.add(i));
+        }
+        for (int i = 0; i < n; i++) {
+            assertTrue(tree.contains(i), String.format("should contain %d", i));
+        }
+        assertIntegrity(tree);
+        // System.out.println(tree);
     }
 
     @Test
@@ -86,12 +99,40 @@ public interface SearchTreeTest {
         List<Integer> l = List.of(6, 9, 1, 10, 8, 7);
         for (Integer e : l) {
             assertTrue(tree.add(e));
-            System.out.println(tree);
-            System.out.println("================");
+            //System.out.println(tree);
+            //System.out.println("================");
         }
         for (Integer e : l) {
             assertTrue(tree.contains(e), String.format("should contain %d", e));
         }
+        assertIntegrity(tree);
+        //System.out.println(tree);
+    }
+
+    @Test
+    default void removeList() {
+        SearchTree<Integer> tree = createTree();
+        List<Integer> l1 = List.of(9, 10, 13);
+        for (Integer e : l1) {
+            assertTrue(tree.add(e));
+            //System.out.println(tree);
+            //System.out.println("================");
+        }
+        for (Integer e : l1) {
+            assertTrue(tree.contains(e), String.format("should contain %d", e));
+        }
+        List<Integer> l2 = List.of(9, 13, 10);
+        for (Integer integer : l2) {
+            assertTrue(tree.remove(integer), String.format("Should change when removing %d", integer));
+            System.out.println("===============");
+            System.out.println(tree);
+            System.out.println("===============");
+            assertFalse(tree.contains(integer), String.format("should not contain %d", integer));
+        }
+        for (Integer integer : l2) {
+            assertFalse(tree.contains(integer), String.format("should not contain %d", integer));
+        }
+        assertTrue(tree.isEmpty(), "tree should be empty.");
         assertIntegrity(tree);
         //System.out.println(tree);
     }
@@ -108,15 +149,12 @@ public interface SearchTreeTest {
             assertTrue(tree.contains(i), String.format("should contain %d", i));
         }
         assertIntegrity(tree);
-        System.out.println(tree);
+        //System.out.println(tree);
     }
 
     @Test
     default void addFewRandoms() {
-        for (int i = 1; i < 30; i++) {
-            System.out.println("========== " + i + " =============");
-            addRandoms(i);
-        }
+        addRandoms(10);
     }
 
     @Test
@@ -246,7 +284,7 @@ public interface SearchTreeTest {
     default void addRandoms(int n) {
         SearchTree<Integer> tree = createTree();
         List<Integer> randoms = randomArrayList(n);
-        System.out.println(randoms);
+        //System.out.println(randoms);
         int i = 1;
         for (Integer random : randoms) {
             tree.add(random);

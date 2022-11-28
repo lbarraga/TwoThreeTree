@@ -231,14 +231,6 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
         }
     }
 
-    public void replace(E value, E with){
-        if (leftValue.compareTo(value) == 0) {
-            leftValue = with;
-        } else if (rightValue.compareTo(value) == 0){
-            rightValue = with;
-        }
-    }
-
     public boolean isLeaf(){
         return this.leftChild == null;
     }
