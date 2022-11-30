@@ -89,7 +89,7 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
         rechter.leftChild = middleChild;
         rechter.middleChild = rightChild;
         rightValue = null;
-        rightChild = rechter;
+        middleChild = rechter;
     }
 
     /**
@@ -115,6 +115,11 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
 
     public boolean isLeaf(){
         return this.leftChild == null && this.middleChild == null && this.rightChild == null;
+    }
+
+    public boolean hasInOrderPredecessor(E e){
+        return (leftValue.compareTo(e) == 0 && leftChild != null) ||
+                (rightValue.compareTo(e) == 0 && middleChild != null);
     }
 
 }

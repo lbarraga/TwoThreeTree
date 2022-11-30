@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public interface SearchTreeTest {
 
 
-    Random RG = new Random(30);
+    Random RG = new Random(8);
 
     SearchTree<Integer> createTree();
     void assertIntegrity(SearchTree<Integer> tree);
@@ -96,11 +96,12 @@ public interface SearchTreeTest {
     @Test
     default void addList() {
         SearchTree<Integer> tree = createTree();
-        List<Integer> l = List.of(6, 9, 1, 10, 8, 7);
+        List<Integer> l = List.of(5, 1, 3, 2);
         for (Integer e : l) {
+            System.out.println(e + " =====");
             assertTrue(tree.add(e));
-            //System.out.println(tree);
-            //System.out.println("================");
+            System.out.println(tree);
+            System.out.println("================");
         }
         for (Integer e : l) {
             assertTrue(tree.contains(e), String.format("should contain %d", e));
@@ -112,7 +113,7 @@ public interface SearchTreeTest {
     @Test
     default void removeList() {
         SearchTree<Integer> tree = createTree();
-        List<Integer> l1 = List.of(9, 10, 13);
+        List<Integer> l1 = List.of(9, 10, 13, 0, 14);
         for (Integer e : l1) {
             assertTrue(tree.add(e));
             //System.out.println(tree);
@@ -121,7 +122,7 @@ public interface SearchTreeTest {
         for (Integer e : l1) {
             assertTrue(tree.contains(e), String.format("should contain %d", e));
         }
-        List<Integer> l2 = List.of(9, 13, 10);
+        List<Integer> l2 = List.of(0, 9, 14, 13, 10);
         for (Integer integer : l2) {
             assertTrue(tree.remove(integer), String.format("Should change when removing %d", integer));
             System.out.println("===============");
@@ -154,12 +155,32 @@ public interface SearchTreeTest {
 
     @Test
     default void addFewRandoms() {
-        addRandoms(10);
+        addRandoms(1_000_000);
     }
 
     @Test
     default void addManyRandoms() {
         addRandoms(20_000);
+    }
+
+    @Test
+    default void RemoveManyDuplicatesRandoms() {
+        removeRandoms(10_000);
+    }
+
+    @Test
+    default void removeEvenMoreRandoms() {
+        removeRandoms(1_000_000);
+    }
+
+    @Test
+    default void removeFewRandoms() {
+        removeRandoms(5);
+    }
+
+    @Test
+    default void removeManyRandoms() {
+        removeRandoms(20_000);
     }
 
     @Test
@@ -288,11 +309,55 @@ public interface SearchTreeTest {
         int i = 1;
         for (Integer random : randoms) {
             tree.add(random);
+            //System.out.println("===============");
+            //System.out.println(tree);
+            //System.out.println("===============");
         }
 
         //System.out.println(tree);
         for (Integer random : randoms) {
             assertTrue(tree.contains(random), String.format("should contain %d", random));
+        }
+        assertEquals(tree.size(), n, "size should be " + n);
+        assertIntegrity(tree);
+    }
+
+    default void removeRandoms(int n) {
+        SearchTree<Integer> tree = createTree();
+        List<Integer> randoms = randomArrayList(n);
+        System.out.println(randoms);
+        System.out.println("Added: " + randoms);
+        for (Integer random : randoms) {
+            System.out.println("Add " + random);
+            tree.add(random);
+            System.out.println("===============");
+            System.out.println(tree);
+            System.out.println("===============");
+        }
+
+        Collections.shuffle(randoms, RG);
+        System.out.println("Remove: ");
+        for (int i = 0; i < randoms.size() / 2; i++) {
+            System.out.print(randoms.get(i) + ", ");
+        }
+        System.out.println();
+        for (int i = 0; i < randoms.size() / 2; i++) {
+            Integer random = randoms.get(i);
+            System.out.println("remove: " + random);
+            tree.remove(random);
+            assertFalse(tree.contains(random), String.format("Should not contain %d", random));
+            System.out.println("===============");
+            System.out.println(tree);
+            System.out.println("===============");
+        }
+        System.out.println("Remove: ");
+        for (int i = randoms.size() / 2; i < randoms.size(); i++) {
+            System.out.print(randoms.get(i) + ", ");
+        }
+        System.out.println();
+        for (int i = randoms.size() / 2; i < randoms.size(); i++) {
+            Integer random = randoms.get(i);
+            assertTrue(tree.contains(random), String.format("tree should contain %d :))", random));
         }
         assertIntegrity(tree);
     }

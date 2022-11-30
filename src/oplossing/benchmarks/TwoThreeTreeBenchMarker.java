@@ -17,13 +17,13 @@ public class TwoThreeTreeBenchMarker {
     public static int visited = 0;
 
     public static void main(String[] args) {
-        meanTimeAddNRandoms(1_000_000, 5);
+        meanTimeAddNRandoms(10_000_000, 3);
     }
 
     public static double timeAddNRandoms(int n) {
         Sampler sampler = new Sampler(RG, n);
         List<Integer> samples = sampler.getElements();
-        TwoThreeTree<Integer> tree = new TwoThreeTree<>();
+        BottomUpSemiSplayTwoThreeTree<Integer> tree = new BottomUpSemiSplayTwoThreeTree<>();
 
         long start = System.currentTimeMillis();
         for (Integer rand : samples) {
@@ -31,7 +31,7 @@ public class TwoThreeTreeBenchMarker {
         }
         long time = System.currentTimeMillis() - start;
         double timeInSec = (double) time / 1000;
-        System.out.println(tree.maxDepth(tree.root));
+        //System.out.println(tree.maxDepth(tree.root));
         System.out.println("Adding " + n + " elements took " + timeInSec + "s");
         return timeInSec;
     }
