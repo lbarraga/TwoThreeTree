@@ -28,7 +28,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
             splayPad.push(node);
             node = node.getChild(o);
         }
-        splay(splayPad);
+        // splay(splayPad); TODO terugdoen!!
         return node != null;
     }
 
@@ -58,16 +58,16 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
             stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
             if (stack.peek().hasRightValue() && stack.peek().leftChild == newNode) {
                 stack.peek().redistribute2();
-                System.out.println(2);
+                //System.out.println(2);
             } else if (stack.peek().rightChild == newNode) {
                 stack.peek().redistribute1();
-                System.out.println(1);
+                //System.out.println(1);
             } else if (stack.peek().middleChild == newNode) {
                 stack.peek().redistribute3();
-                System.out.println(3);
+                //System.out.println(3);
             }
         }
-        System.out.println(stack);
+        //System.out.println(stack);
         // Splay de bezochte toppen van onder naar boven.
         splay(stack);
         return true;
@@ -141,6 +141,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         if (newParent.rightChild.isEmpty()){
             newParent.rightChild = newParent.rightChild.leftChild;
         }
+
 
         // Wanneer De eerste 3 nodes van de boom ge-splayed zijn is er geen parent waaraan
         // de nieuwe toppen aan gehecht kunnen worden, dus wordt newParent de nieuwe root
@@ -226,47 +227,76 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         Ss233Node<E> verwijderNode = current; // De node met de te verwijderen sleutel.
 
         // Als de node met de te verwijderen sleutel geen blad is, vervang de te verwijderen
-        // waarde dan met zijn 'in-order predecessor'
-        if (verwijderNode.hasInOrderPredecessor(e)) {
+        // waarde dan met zijn 'in-order successor'
+        if (verwijderNode.hasInOrderSuccessor(e)) {
             pad.push(current);
-            current = (current.leftValue.compareTo(e) == 0) ? current.leftChild : current.middleChild;
-            System.out.println(current);
-            while (current != null) { // Zoek in-order predecessor.
+            current = (current.leftValue.compareTo(e) == 0) ? current.middleChild: current.rightChild;
+            //System.out.println(current);
+            while (current != null) { // Zoek in-order successor.
                 pad.push(current); // vul pad verder aan van verwijderNode naar het vervang-blad.
-                current = current.hasRightValue() ? current.rightChild : current.middleChild;
+                current = current.leftChild;
             }
 
             Ss233Node<E> leaf = pad.pop();
-            E predecessor = leaf.hasRightValue() ? leaf.rightValue : leaf.leftValue;
-            System.out.println("Predecessor: " + leaf);
+            E successor = leaf.leftValue;
+            //System.out.println("Successor: " + leaf);
 
-            // Vervang de te verwijderen sleutel door zijn predecessor.
-            verwijderNode.replace(e, predecessor);
+            // Vervang de te verwijderen sleutel door zijn successor.
+            verwijderNode.replace(e, successor);
+            leaf.leftValue = e;
             verwijderNode = leaf; // de leaf moet nu verwijderd worden
         }
 
-        if (verwijderNode.hasRightValue() && verwijderNode.rightValue.compareTo(e) == 0) { // todo tweede weg
+        //System.out.println("verwijderNode = " + verwijderNode);
+
+        // Kan nooit behalve als er geen successor onder hem is, maar wel naast. (te verwijderen waarde zat rechts)
+        if (verwijderNode.leftValue.compareTo(e) != 0) {
             verwijderNode.rightValue = null;
             return true;
         }
 
-        if (pad.isEmpty()){
-            root = null;
+        verwijderNode.leftValue = verwijderNode.rightValue;
+        verwijderNode.rightValue = null;
+
+//        System.out.println("verwijderNode = " + verwijderNode);
+//        System.out.println("verwijderNode.leftChild = " + verwijderNode.leftChild);
+//        System.out.println("verwijderNode.middleChild = " + verwijderNode.middleChild);
+//        System.out.println("verwijderNode.rightChild = " + verwijderNode.rightChild);
+
+        if (verwijderNode.leftValue != null) { // de te verwijderen waarde zat links en is opgegeten door de rechtse
+            if (verwijderNode.leftChild == null) {
+                //System.out.println("left is null");
+                //System.out.println("middel naar left");
+                verwijderNode.leftChild = verwijderNode.middleChild;
+                verwijderNode.middleChild = null;
+            }
+            if (verwijderNode.middleChild == null) {
+                //System.out.println("middel is null");
+                verwijderNode.middleChild = verwijderNode.rightChild;
+                verwijderNode.rightChild = null;
+            }
             return true;
         }
 
-        if (verwijderNode.leftValue.compareTo(e) == 0 && verwijderNode.hasRightValue()) {
-            verwijderNode.leftValue = verwijderNode.rightValue;
-            verwijderNode.leftChild = verwijderNode.middleChild;
+        if (verwijderNode.middleChild == null) {
+            //System.out.println("rechts naar middel");
             verwijderNode.middleChild = verwijderNode.rightChild;
-            verwijderNode.rightChild = null;
-        } else if (pad.peek().leftChild == verwijderNode){
-            pad.peek().leftChild = verwijderNode.leftChild;
-            System.out.println(888);
-        } else if (pad.peek().middleChild == verwijderNode){
-            pad.peek().middleChild = verwijderNode.leftChild;
+        }
+
+        if (pad.isEmpty()){
+            root = verwijderNode.leftChild;
+            return true;
+        }
+
+        // het kan zijn dat de node enkel een linkerkind heeft, en dus geen successor onder hem.
+        if (verwijderNode.leftChild != null) {
+            pad.peek().setChild(verwijderNode.leftChild);
+        } else if (verwijderNode.middleChild != null) {
+            //System.out.println("Hier " + verwijderNode.middleChild);
+            pad.peek().setChild(verwijderNode.middleChild);
         } else {
-            pad.peek().rightChild = verwijderNode.leftChild;
+            //System.out.println("VerwijderNode = " + verwijderNode);
+            pad.peek().setChildTo(verwijderNode, verwijderNode.middleChild);
         }
         return true;
     }
@@ -279,7 +309,26 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        List<E> valueList = new ArrayList<>();
+        if (root == null) {
+            return Collections.emptyIterator();
+        }
+        inorder(root, valueList);
+        return valueList.listIterator();
+    }
+
+    private void inorder(Ss233Node<E> node, List<E> list) {
+        if (node == null){
+            return;
+        }
+        inorder(node.leftChild, list);
+        list.add(node.leftValue);
+        inorder(node.middleChild, list);
+        if (node.hasRightValue()) {
+            list.add(node.rightValue);
+            inorder(node.rightChild, list);
+        }
+
     }
 
     @Override

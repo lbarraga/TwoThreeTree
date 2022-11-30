@@ -117,9 +117,127 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
         return this.leftChild == null && this.middleChild == null && this.rightChild == null;
     }
 
-    public boolean hasInOrderPredecessor(E e){
-        return (leftValue.compareTo(e) == 0 && leftChild != null) ||
-                (rightValue.compareTo(e) == 0 && middleChild != null);
+    public void setChildTo(Ss233Node<E> child, Ss233Node<E> to) {
+        if (leftChild == child) {
+            leftChild = to;
+        } else if (middleChild == child) {
+            middleChild = to;
+        } else if (rightChild == child) {
+            rightChild = to;
+        }
+    }
+
+    public boolean hasInOrderSuccessor(E e) {
+        return (leftValue.compareTo(e) == 0 && middleChild != null) ||
+                (hasRightValue() && rightValue.compareTo(e) == 0 && rightChild != null);
+    }
+
+    public void percolateUpFromRight(Ss233Node<E> parent){
+        parent.rightValue = leftValue;
+        parent.middleChild = leftChild;
+        parent.rightChild = middleChild;
+    }
+
+    private void redistributeFromLeft(Ss233Node<E> verwijderNode){
+        verwijderNode.leftValue = leftValue;
+        leftValue = middleChild.leftValue;
+        middleChild.leftValue = middleChild.rightValue;
+        middleChild.rightValue = null;
+
+        verwijderNode.leftChild = verwijderNode.middleChild;
+        verwijderNode.middleChild = middleChild.leftChild;
+        middleChild.leftChild = middleChild.middleChild;
+        middleChild.middleChild = middleChild.rightChild;
+        middleChild.rightChild = null;
+    }
+
+    private void redistributeFromMiddle1(Ss233Node<E> verwijderNode) {
+        verwijderNode.leftValue = leftValue;
+        leftValue = leftChild.rightValue;
+        leftChild.rightValue = null;
+
+        middleChild.leftChild = leftChild.rightChild;
+        leftChild.rightChild = null;
+
+    }
+
+    private void redistributeFromMiddle2(Ss233Node<E> verwijderNode) {
+        verwijderNode.leftValue = rightValue;
+        rightValue = rightChild.leftValue;
+        rightChild.leftValue = rightChild.rightValue;
+        rightChild.rightValue = null;
+
+        verwijderNode.leftChild = verwijderNode.middleChild;
+        verwijderNode.middleChild = rightChild.leftChild;
+        rightChild.leftChild = rightChild.middleChild;
+        rightChild.middleChild = rightChild.rightChild;
+        rightChild.rightChild = null;
+    }
+
+    private void redistributeFromRight(Ss233Node<E> verwijderNode) {
+        verwijderNode.leftValue = rightValue;
+        rightValue = middleChild.rightValue;
+        middleChild.rightValue = null;
+
+        rightChild.leftChild = middleChild.rightChild;
+        middleChild.rightChild = null;
+    }
+
+    public boolean redistribute(Ss233Node<E> verwijderNode) {
+        if (verwijderNode == leftChild && middleChild.numberOfKeys() == 2){
+            redistributeFromLeft(verwijderNode);
+            return true;
+        } else if (verwijderNode == middleChild && leftChild.numberOfKeys() == 2) {
+            redistributeFromMiddle1(verwijderNode);
+            return true;
+        } else if (verwijderNode == middleChild && rightChild != null && rightChild.numberOfKeys() == 2) {
+            redistributeFromMiddle2(verwijderNode);
+            return true;
+        } else if (verwijderNode == rightChild && middleChild.numberOfKeys() == 2) {
+            redistributeFromRight(verwijderNode);
+            return true;
+        }
+        return false;
+    }
+
+    public void mergeIntoLeftChild() {
+        leftChild.leftValue = leftValue;
+        leftChild.rightValue = middleChild.leftValue;
+        leftValue = null;
+        swapValues();
+
+        leftChild.leftChild = leftChild.middleChild;
+        leftChild.middleChild = middleChild.leftChild;
+        leftChild.rightChild = middleChild.middleChild;
+        middleChild = rightChild;
+        rightChild = null;
+    }
+
+    private void mergeIntoMiddleChild() {
+        leftChild.rightValue = leftValue;
+        leftValue = rightValue;
+        rightValue = null;
+
+        leftChild.rightChild = middleChild.middleChild;
+        middleChild = rightChild;
+        rightChild = null;
+    }
+
+    private  void mergeIntoRightChild() {
+        middleChild.rightValue = rightValue;
+        rightValue = null;
+        middleChild.rightChild = rightChild.middleChild;
+        rightChild = null;
+    }
+
+    public void mergeIntoChild(Ss233Node<E> verwijderNode) {
+        if (leftChild == verwijderNode){
+            mergeIntoLeftChild();
+        } else if (middleChild == verwijderNode){
+            mergeIntoMiddleChild();
+        } else if (rightChild == verwijderNode) {
+            mergeIntoRightChild();
+        }
     }
 
 }

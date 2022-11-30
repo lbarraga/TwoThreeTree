@@ -85,6 +85,7 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
         rightChild = null;
     }
 
+    // TODO dit staat ook in SSnode
     private void convertToBinaryFromMiddle() {
         Node233<E> linkerNode = new Node233<>(leftValue, null);
         Node233<E> rechterNode = new Node233<>(rightValue, null);
