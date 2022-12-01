@@ -155,7 +155,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     public Iterator<E> iterator() {
         List<E> valueList = new ArrayList<>();
         if (root.isEmpty()) {
-            return valueList.iterator();
+            return Collections.emptyIterator();
         }
         inorder(root, valueList);
         return valueList.listIterator();

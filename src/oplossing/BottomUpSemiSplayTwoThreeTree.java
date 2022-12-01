@@ -28,7 +28,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
             splayPad.push(node);
             node = node.getChild(o);
         }
-        // splay(splayPad); TODO terugdoen!!
+        splay(splayPad);
         return node != null;
     }
 
@@ -42,6 +42,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         }
 
         if (node != null){ // Het element zit al in de boom.
+            splay(stack);
             return false;
         }
         this.size += 1;
@@ -221,6 +222,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
         }
 
         if (current == null){ // De sleutel zat nog niet in de boom, en kan dus niet verwijderd worden.
+            splay(pad);
             return false;
         }
         size -= 1; // Zal nu zeker verwijderd worden
@@ -275,6 +277,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
                 verwijderNode.middleChild = verwijderNode.rightChild;
                 verwijderNode.rightChild = null;
             }
+            splay(pad);
             return true;
         }
 
@@ -298,6 +301,7 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> implements 
             //System.out.println("VerwijderNode = " + verwijderNode);
             pad.peek().setChildTo(verwijderNode, verwijderNode.middleChild);
         }
+        splay(pad);
         return true;
     }
 
