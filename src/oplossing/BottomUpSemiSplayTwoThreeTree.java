@@ -52,10 +52,10 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Sem
     @Override
     protected void searchInOrderSuccessor(Stack<Ss233Node<E>> pad, Ss233Node<E> current, E e) {
         pad.push(current);
-        current = (current.leftValue.compareTo(e) == 0) ? current.middleChild: current.rightChild;
+        current = (current.leftValue.compareTo(e) == 0) ? current.getMiddleChild() : current.getRightChild();
         while (current != null) { // Zoek in-order successor.
             pad.push(current); // vul pad verder aan van verwijderNode naar het vervang-blad.
-            current = current.leftChild;
+            current = current.getLeftChild();
         }
     }
 

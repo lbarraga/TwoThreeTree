@@ -2,52 +2,69 @@ package oplossing;
 
 public class Node233<E extends Comparable<E>> extends Node<E>{
 
-    public Node233<E> leftChild;
-    public Node233<E> middleChild;
-    public Node233<E> rightChild;
+    private Node233<E> leftChild;
+    private Node233<E> middleChild;
+    private Node233<E> rightChild;
 
 
     public Node233(E leftValue, E rightValue) {
         super(leftValue, rightValue);
     }
 
+    /**
+     * Kleine functie om wat properheid te bewaren in de code.
+     * Op basis van een Element o, kijk in welke richten er gegaan moet worden
+     * om dichter bij dit element te komen
+     * @param o het element waarmee vergeleken wordt
+     * @return een van de kinderen van deze node
+     */
     public Node233<E> getChild(E o) {
         if (hasLeftValue() && leftValue.compareTo(o) > 0) {
-            return leftChild;
+            return getLeftChild();
         }
         if (hasRightValue() && rightValue.compareTo(o) < 0) {
-            return rightChild;
+            return getRightChild();
         }
-        return middleChild;
+        return getMiddleChild();
     }
 
+    /**
+     * Gegeven een nieuw kind, adopteer hem op de juiste plaats.
+     * @param newNode het kind dat geadopteerd zal worden.
+     */
     public void setChild(Node233<E> newNode){
         E o = newNode.leftValue;
         if (hasLeftValue() && leftValue.compareTo(o) > 0) {
-            leftChild = newNode;
+            setLeftChild(newNode);
         } else if (hasRightValue() && rightValue.compareTo(o) < 0) {
-            rightChild = newNode;
+            setRightChild(newNode);
         } else {
-            middleChild = newNode;
+            setMiddleChild(newNode);
         }
     }
 
+    /**
+     * Het rechter kind van de parent (deze node dus) in de parent brengen
+     * Kan enkel wanneer deze node en de parent maar één sleutel hebben
+     */
     private void percolateUpFromRight(Node233<E> parent){
         parent.rightValue = leftValue;
-        parent.middleChild = leftChild;
-        parent.rightChild = middleChild;
+        parent.setMiddleChild(getLeftChild());
+        parent.setRightChild(getMiddleChild());
     }
 
+    /**
+     * Zelfde percolateUpFromRight maar dan vanaf links
+     */
     private void percolateUpFromLeft(Node233<E> parent) {
         parent.rightValue = leftValue;
         parent.swapValues();
-        parent.leftChild = leftChild;
-        parent.rightChild = parent.middleChild;
-        parent.middleChild = middleChild;
+        parent.setLeftChild(getLeftChild());
+        parent.setRightChild(parent.getMiddleChild());
+        parent.setMiddleChild(getMiddleChild());
     }
 
     public void percolateUp(Node233<E> parent, E o) {
-        // parent left value kan enkel null zijn wanneer de root (null, null) is // TODO wegdoen
         if (!parent.hasLeftValue() || parent.leftValue.compareTo(o) > 0) {
             percolateUpFromLeft(parent);
         } else {
@@ -55,6 +72,15 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
         }
     }
 
+    /**
+     * maakt van een deelboom met twee toppen en drie sleutels een binaire boom:
+     *
+     *          [ B ]
+     *         /     \
+     *       [ A ]  [ C ]
+     *
+     * @param o linkerwaarde in de laagste node
+     */
     public void convertToBinary(E o){
         if (rightValue.compareTo(o) < 0) {
             convertToBinaryFromRight();
@@ -65,98 +91,136 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
         }
     }
 
+    /**
+     *  startpositie
+     *
+     *   [ A B ]
+     *          \
+     *          [ C ]
+     */
     private void convertToBinaryFromRight() {
         Node233<E> linkerNode = new Node233<>(leftValue, null);
-        linkerNode.leftChild = leftChild;
-        linkerNode.middleChild = middleChild;
+        linkerNode.setLeftChild(getLeftChild());
+        linkerNode.setMiddleChild(getMiddleChild());
         leftValue = rightValue;
-        leftChild = linkerNode;
-        middleChild = rightChild;
+        setLeftChild(linkerNode);
+        setMiddleChild(getRightChild());
         rightValue = null;
-        rightChild = null;
+        setRightChild(null);
     }
 
+    /**
+     * startpositie
+     *
+     *      [ B C ]
+     *     /
+     *   [ A ]
+     */
     private void convertToBinaryFromLeft() {
         Node233<E> rechterNode = new Node233<>(rightValue, null);
-        rechterNode.leftChild = middleChild;
-        rechterNode.middleChild = rightChild;
-        middleChild = rechterNode;
+        rechterNode.setLeftChild(getMiddleChild());
+        rechterNode.setMiddleChild(getRightChild());
+        setMiddleChild(rechterNode);
         rightValue = null;
-        rightChild = null;
+        setRightChild(null);
     }
 
-    // TODO dit staat ook in SSnode
+    /**
+     * startpositie
+     *
+     *   [ A C ]
+     *      |
+     *    [ B ]
+     */
     private void convertToBinaryFromMiddle() {
         Node233<E> linkerNode = new Node233<>(leftValue, null);
         Node233<E> rechterNode = new Node233<>(rightValue, null);
-        linkerNode.leftChild = leftChild;
-        linkerNode.middleChild = middleChild.leftChild;
-        rechterNode.middleChild = rightChild;
-        rechterNode.leftChild = middleChild.middleChild;
+        linkerNode.setLeftChild(getLeftChild());
+        linkerNode.setMiddleChild(getMiddleChild().getLeftChild());
+        rechterNode.setMiddleChild(getRightChild());
+        rechterNode.setLeftChild(getMiddleChild().getMiddleChild());
 
-        leftValue = middleChild.leftValue;
-        leftChild = linkerNode;
-        middleChild = rechterNode;
+        leftValue = getMiddleChild().leftValue;
+        setLeftChild(linkerNode);
+        setMiddleChild(rechterNode);
         rightValue = null;
-        rightChild = null;
+        setRightChild(null);
     }
 
+    /**
+     * De verwijderNode zit in het midden en gebruikt gebruikt zijn midden-sibling om zichzelf op te vullen
+     */
     private void redistributeFromLeft(Node233<E> verwijderNode){
         verwijderNode.leftValue = leftValue;
-        leftValue = middleChild.leftValue;
-        middleChild.leftValue = middleChild.rightValue;
-        middleChild.rightValue = null;
+        leftValue = getMiddleChild().leftValue;
+        getMiddleChild().leftValue = getMiddleChild().rightValue;
+        getMiddleChild().rightValue = null;
 
-        verwijderNode.leftChild = verwijderNode.middleChild;
-        verwijderNode.middleChild = middleChild.leftChild;
-        middleChild.leftChild = middleChild.middleChild;
-        middleChild.middleChild = middleChild.rightChild;
-        middleChild.rightChild = null;
+        verwijderNode.setLeftChild(verwijderNode.getMiddleChild());
+        verwijderNode.setMiddleChild(getMiddleChild().getLeftChild());
+        getMiddleChild().setLeftChild(getMiddleChild().getMiddleChild());
+        getMiddleChild().setMiddleChild(getMiddleChild().getRightChild());
+        getMiddleChild().setRightChild(null);
     }
 
+    /**
+     * De verwijderNode zit in het midden en gebruikt zijn linker-sibling met twee sleutels
+     */
     private void redistributeFromMiddle1(Node233<E> verwijderNode) {
         verwijderNode.leftValue = leftValue;
-        leftValue = leftChild.rightValue;
-        leftChild.rightValue = null;
+        leftValue = getLeftChild().rightValue;
+        getLeftChild().rightValue = null;
 
-        middleChild.leftChild = leftChild.rightChild;
-        leftChild.rightChild = null;
+        getMiddleChild().setLeftChild(getLeftChild().getRightChild());
+        getLeftChild().setRightChild(null);
 
     }
 
+    /**
+     * De verwijderNode zit in het midden en gebruikt zijn rechter-sibling met twee sleutels
+     */
     private void redistributeFromMiddle2(Node233<E> verwijderNode) {
         verwijderNode.leftValue = rightValue;
-        rightValue = rightChild.leftValue;
-        rightChild.leftValue = rightChild.rightValue;
-        rightChild.rightValue = null;
+        rightValue = getRightChild().leftValue;
+        getRightChild().leftValue = getRightChild().rightValue;
+        getRightChild().rightValue = null;
 
-        verwijderNode.leftChild = verwijderNode.middleChild;
-        verwijderNode.middleChild = rightChild.leftChild;
-        rightChild.leftChild = rightChild.middleChild;
-        rightChild.middleChild = rightChild.rightChild;
-        rightChild.rightChild = null;
+        verwijderNode.setLeftChild(verwijderNode.getMiddleChild());
+        verwijderNode.setMiddleChild(getRightChild().getLeftChild());
+        getRightChild().setLeftChild(getRightChild().getMiddleChild());
+        getRightChild().setMiddleChild(getRightChild().getRightChild());
+        getRightChild().setRightChild(null);
     }
 
+    /**
+     * De verwijderNode zit rechts en zijn midden-sibling heeft twee nodes
+     */
     private void redistributeFromRight(Node233<E> verwijderNode) {
         verwijderNode.leftValue = rightValue;
-        rightValue = middleChild.rightValue;
-        middleChild.rightValue = null;
+        rightValue = getMiddleChild().rightValue;
+        getMiddleChild().rightValue = null;
 
-        rightChild.leftChild = middleChild.rightChild;
-        middleChild.rightChild = null;
+        getRightChild().setLeftChild(getMiddleChild().getRightChild());
+        getMiddleChild().setRightChild(null);
     }
-    
+
+
+    /**
+     * Gebruik Een node met twee sleutels naast de verwijderNode
+     * @param verwijderNode de lege node die heropgevuld moet worden.
+     * @return false als er geen herdistributie is gebeurt
+     */
     public boolean redistribute(Node233<E> verwijderNode) {
-        if (verwijderNode == leftChild && middleChild.numberOfKeys() == 2){
+        if (verwijderNode == getLeftChild() && getMiddleChild().numberOfKeys() == 2){
             redistributeFromLeft(verwijderNode);
             return true;
-        } else if (verwijderNode == middleChild && leftChild.numberOfKeys() == 2) {
+        } else if (verwijderNode == getMiddleChild() && getLeftChild().numberOfKeys() == 2) {
             redistributeFromMiddle1(verwijderNode);
             return true;
-        } else if (verwijderNode == middleChild && rightChild != null && rightChild.numberOfKeys() == 2) {
+        } else if (verwijderNode == getMiddleChild() && getRightChild() != null && getRightChild().numberOfKeys() == 2) {
             redistributeFromMiddle2(verwijderNode);
             return true;
-        } else if (verwijderNode == rightChild && middleChild.numberOfKeys() == 2) {
+        } else if (verwijderNode == getRightChild() && getMiddleChild().numberOfKeys() == 2) {
             redistributeFromRight(verwijderNode);
             return true;
         }
@@ -164,68 +228,94 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
     }
 
     private void mergeIntoLeftChild() {
-        leftChild.leftValue = leftValue;
-        leftChild.rightValue = middleChild.leftValue;
+        getLeftChild().leftValue = leftValue;
+        getLeftChild().rightValue = getMiddleChild().leftValue;
         leftValue = null;
         swapValues();
 
-        leftChild.leftChild = leftChild.middleChild;
-        leftChild.middleChild = middleChild.leftChild;
-        leftChild.rightChild = middleChild.middleChild;
-        middleChild = rightChild;
-        rightChild = null;
+        getLeftChild().setLeftChild(getLeftChild().getMiddleChild());
+        getLeftChild().setMiddleChild(getMiddleChild().getLeftChild());
+        getLeftChild().setRightChild(getMiddleChild().getMiddleChild());
+        setMiddleChild(getRightChild());
+        setRightChild(null);
     }
 
     private void mergeIntoMiddleChild() {
-        leftChild.rightValue = leftValue;
+        getLeftChild().rightValue = leftValue;
         leftValue = rightValue;
         rightValue = null;
 
-        leftChild.rightChild = middleChild.middleChild;
-        middleChild = rightChild;
-        rightChild = null;
+        getLeftChild().setRightChild(getMiddleChild().getMiddleChild());
+        setMiddleChild(getRightChild());
+        setRightChild(null);
     }
 
     private  void mergeIntoRightChild() {
-        middleChild.rightValue = rightValue;
+        getMiddleChild().rightValue = rightValue;
         rightValue = null;
-        middleChild.rightChild = rightChild.middleChild;
-        rightChild = null;
+        getMiddleChild().setRightChild(getRightChild().getMiddleChild());
+        setRightChild(null);
     }
 
+    /**
+     * Wanneer deze node twee sleutels heeft, kan een van de kinderen de lege node invullen met een van zijn sleutels,
+     * Een gat dat daar zou kunnen ontstaan wordt op zijn beurt opgevuld door een van de sleutels uit deze node.
+     * @param verwijderNode De lege node waarin gemerged moet worden
+     */
     public void mergeIntoChild(Node233<E> verwijderNode) {
-        if (leftChild == verwijderNode){
+        if (getLeftChild() == verwijderNode){
             mergeIntoLeftChild();
-        } else if (middleChild == verwijderNode){
+        } else if (getMiddleChild() == verwijderNode){
             mergeIntoMiddleChild();
-        } else if (rightChild == verwijderNode) {
+        } else if (getRightChild() == verwijderNode) {
             mergeIntoRightChild();
         }
     }
 
+
+    /**
+     *  startpositie
+     *      [ B ]
+     *     /
+     *  [ A ]
+     *
+     */
     private void geval2NodesLeft(Node233<E> verwijderNode) {
         verwijderNode.leftValue = leftValue;
         leftValue = null;
-        verwijderNode.rightValue = middleChild.leftValue;
-        verwijderNode.leftChild = verwijderNode.middleChild;
-        verwijderNode.middleChild = middleChild.leftChild;
-        verwijderNode.rightChild = middleChild.middleChild;
-        middleChild = leftChild;
-        leftChild = null; // TODO het kind van de (null, null) node niet middle child laten zijn maar leftchild
+        verwijderNode.rightValue = getMiddleChild().leftValue;
+        verwijderNode.setLeftChild(verwijderNode.getMiddleChild());
+        verwijderNode.setMiddleChild(getMiddleChild().getLeftChild());
+        verwijderNode.setRightChild(getMiddleChild().getMiddleChild());
+        setMiddleChild(getLeftChild());
+        setLeftChild(null); // TODO het kind van de (null, null) node niet middle child laten zijn maar leftchild
     }
 
+
+    /**
+     * startpositie
+     *    [ A ]
+     *         \
+     *        [ B ]
+     */
     private void geval2NodesMiddle(Node233<E> verwijderNode) {
         verwijderNode.rightValue = leftValue;
-        verwijderNode.rightChild = middleChild.middleChild;
+        verwijderNode.setRightChild(getMiddleChild().getMiddleChild());
         leftValue = null;
-        middleChild.leftValue = leftChild.leftValue;
-        middleChild.middleChild = leftChild.middleChild;
-        middleChild.leftChild = leftChild.leftChild;
-        leftChild = null;
+        getMiddleChild().leftValue = getLeftChild().leftValue;
+        getMiddleChild().setMiddleChild(getLeftChild().getMiddleChild());
+        getMiddleChild().setLeftChild(getLeftChild().getLeftChild());
+        setLeftChild(null);
     }
 
+    /**
+     *          Leeg
+     *           |
+     *        [ A B ]
+     *
+     */
     public void geval2nodes(Node233<E> verwijderNode){
-        if (verwijderNode == leftChild) {
+        if (verwijderNode == getLeftChild()) {
             geval2NodesLeft(verwijderNode);
         } else {
             geval2NodesMiddle(verwijderNode);
@@ -233,7 +323,30 @@ public class Node233<E extends Comparable<E>> extends Node<E>{
     }
 
     public boolean isLeaf(){
-        return this.leftChild == null;
+        return this.getLeftChild() == null;
     }
 
+    public Node233<E> getLeftChild() {
+        return leftChild;
+    }
+
+    public void setLeftChild(Node233<E> leftChild) {
+        this.leftChild = leftChild;
+    }
+
+    public Node233<E> getMiddleChild() {
+        return middleChild;
+    }
+
+    public void setMiddleChild(Node233<E> middleChild) {
+        this.middleChild = middleChild;
+    }
+
+    public Node233<E> getRightChild() {
+        return rightChild;
+    }
+
+    public void setRightChild(Node233<E> rightChild) {
+        this.rightChild = rightChild;
+    }
 }

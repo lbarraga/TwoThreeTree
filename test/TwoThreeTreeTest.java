@@ -1,11 +1,6 @@
 import opgave.SearchTree;
-import oplossing.Node;
 import oplossing.Node233;
 import oplossing.TwoThreeTree;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,13 +51,13 @@ public class TwoThreeTreeTest implements SearchTreeTest {
             return level == depth;
         }
 
-        return allNodesSameHeightHulp(node.leftChild, level + 1)
-                && allNodesSameHeightHulp(node.middleChild, level + 1)
-                && (node.rightValue == null || allNodesSameHeightHulp(node.rightChild, level + 1));
+        return allNodesSameHeightHulp(node.getLeftChild(), level + 1)
+                && allNodesSameHeightHulp(node.getMiddleChild(), level + 1)
+                && (node.rightValue == null || allNodesSameHeightHulp(node.getRightChild(), level + 1));
     }
 
     private boolean isLeaf(Node233<Integer> node){
-        return node.leftChild == null && node.rightChild == null && node.middleChild == null;
+        return node.getLeftChild() == null && node.getRightChild() == null && node.getMiddleChild() == null;
     }
 
 }

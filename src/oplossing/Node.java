@@ -1,6 +1,11 @@
 package oplossing;
 
-public class Node<E extends Comparable<E>> {
+/**
+ * Abstracte superklasse node van de Node233 en SS233Node.
+ * In deze twee subklassen is er wat codeDuplicate, aangezien overerving hier moeilijk was.
+ * @param <E>
+ */
+public abstract class Node<E extends Comparable<E>> {
 
     public E leftValue;
     public E rightValue;

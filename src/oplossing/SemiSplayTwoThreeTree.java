@@ -36,11 +36,11 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
 
         Ss233Node<E> newNode = new Ss233Node<>(o, null);
         stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
-        if (stack.peek().hasRightValue() && stack.peek().leftChild == newNode) {
+        if (stack.peek().hasRightValue() && stack.peek().getLeftChild() == newNode) {
             stack.peek().redistribute2();
-        } else if (stack.peek().rightChild == newNode) {
+        } else if (stack.peek().getRightChild() == newNode) {
             stack.peek().redistribute1();
-        } else if (stack.peek().middleChild == newNode) {
+        } else if (stack.peek().getMiddleChild() == newNode) {
             stack.peek().redistribute3();
         }
 
@@ -69,33 +69,33 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
         verwijderNode.rightValue = null;
 
         if (verwijderNode.leftValue != null) { // de te verwijderen waarde zat links en is opgegeten door de rechtse
-            if (verwijderNode.leftChild == null) {
-                verwijderNode.leftChild = verwijderNode.middleChild;
-                verwijderNode.middleChild = null;
+            if (verwijderNode.getLeftChild() == null) {
+                verwijderNode.setLeftChild(verwijderNode.getMiddleChild());
+                verwijderNode.setMiddleChild(null);
             }
-            if (verwijderNode.middleChild == null) {
-                verwijderNode.middleChild = verwijderNode.rightChild;
-                verwijderNode.rightChild = null;
+            if (verwijderNode.getMiddleChild() == null) {
+                verwijderNode.setMiddleChild(verwijderNode.getRightChild());
+                verwijderNode.setRightChild(null);
             }
             return;
         }
 
-        if (verwijderNode.middleChild == null) {
-            verwijderNode.middleChild = verwijderNode.rightChild;
+        if (verwijderNode.getMiddleChild() == null) {
+            verwijderNode.setMiddleChild(verwijderNode.getRightChild());
         }
 
         if (pad.isEmpty()) {
-            root = verwijderNode.leftChild;
+            root = verwijderNode.getLeftChild();
             return;
         }
 
         // het kan zijn dat de node enkel een linkerkind heeft, en dus geen successor onder hem.
-        if (verwijderNode.leftChild != null) {
-            pad.peek().setChild(verwijderNode.leftChild);
-        } else if (verwijderNode.middleChild != null) {
-            pad.peek().setChild(verwijderNode.middleChild);
+        if (verwijderNode.getLeftChild() != null) {
+            pad.peek().setChild(verwijderNode.getLeftChild());
+        } else if (verwijderNode.getMiddleChild() != null) {
+            pad.peek().setChild(verwijderNode.getMiddleChild());
         } else {
-            pad.peek().setChildTo(verwijderNode, verwijderNode.middleChild);
+            pad.peek().setChildTo(verwijderNode, verwijderNode.getMiddleChild());
         }
 
     }
@@ -125,9 +125,9 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
 
         // De nieuwe structuur van de nodes (zoals te zien in documentatie)
         Ss233Node<E> newParent = new Ss233Node<>(null, null);
-        newParent.leftChild = first;
-        newParent.middleChild = second;
-        newParent.rightChild = third;
+        newParent.setLeftChild(first);
+        newParent.setMiddleChild(second);
+        newParent.setRightChild(third);
 
         // vullen van de values in de nodes, in volgende volgorde: A B C D E F (zie docstring)
         // Het is niet per se sneller wanneer dit uitdrukkelijk onder elkaar geschreven wordt zonder Stack.
@@ -143,15 +143,15 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
         setSingleKeyedChild(second, children); // Voeg de kinderen toe aan newChild2
         setTwoKeyedChild(third, children); // Voeg de kinderen toe aan newChild3
 
-        if (newParent.rightChild.rightChild != null && aantalKinderen == 7) {
-            newParent.rightChild.redistribute1();
+        if (newParent.getRightChild().getRightChild() != null && aantalKinderen == 7) {
+            newParent.getRightChild().redistribute1();
         }
 
         // Wanneer er 4 nodes en 5 children zijn doet het probleem zich voor dat
         // dat het linkerkind van newChild4 (EF in docs) het vijfde kind is.
         // Dit kan makkelijk opgelost worden door dat linkerkind de nieuwe Child4 te maken
-        if (newParent.rightChild.isEmpty()){
-            newParent.rightChild = newParent.rightChild.leftChild;
+        if (newParent.getRightChild().isEmpty()){
+            newParent.setRightChild(newParent.getRightChild().getLeftChild());
         }
 
 
@@ -182,10 +182,10 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
         if (node.hasRightValue()) {
             values.add(node.rightValue);
             node.rightValue = null;
-            extractOneToChildren(node.rightChild, node, other1, other2, children, values);
+            extractOneToChildren(node.getRightChild(), node, other1, other2, children, values);
         }
-        extractOneToChildren(node.middleChild, node, other1, other2, children, values);
-        extractOneToChildren(node.leftChild, node, other1, other2, children, values);
+        extractOneToChildren(node.getMiddleChild(), node, other1, other2, children, values);
+        extractOneToChildren(node.getLeftChild(), node, other1, other2, children, values);
     }
 
     /**
@@ -206,22 +206,40 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
         }
     }
 
+    /**
+     * Node [ A ] en [ C ] (zie docs splayOne) hebben maar twee kinderen, het rechterkind kan dus overgeslaan worden
+     * @param node de singlekeyed node
+     * @param children de stack met kinderen
+     */
     private void setSingleKeyedChild(Ss233Node<E> node, Stack<Ss233Node<E>> children) {
-        node.leftChild = children.pop();
-        node.middleChild = children.pop();
-        node.rightChild = null;
+        node.setLeftChild(children.pop());
+        node.setMiddleChild(children.pop());
+        node.setRightChild(null);
     }
 
+    /**
+     * [ E F ] heeft misschien twee sleutels, dus probeer in tegenstelling tot `setSingleKeyedChild`
+     * ook het rechter kind te setten
+     * @param node
+     * @param children
+     */
     private void setTwoKeyedChild(Ss233Node<E> node, Stack<Ss233Node<E>> children){
-        node.leftChild = safePop(children);
-        node.middleChild = safePop(children);
-        node.rightChild = safePop(children);
+        node.setLeftChild(safePop(children));
+        node.setMiddleChild(safePop(children));
+        node.setRightChild(safePop(children));
     }
 
     protected Ss233Node<E> safePop(Stack<Ss233Node<E>> children) {
         return children.isEmpty() ? null : children.pop();
     }
 
+    /**
+     * vervang een waarde in een node met zijn in order successor
+     * @param leaf het blad waarin de in order successor van de waarde in de verwijdernode zit.
+     * @param verwijderNode de node met de waarde in die verwijderd moet worden
+     * @param e de waarde die verwisseld moet worden met de successor
+     * @return het blad waaruit de in order successor gehaald is
+     */
     protected Ss233Node<E> switchValues(Ss233Node<E> leaf, Ss233Node<E> verwijderNode, E e){
         E successor = leaf.leftValue;
         // Vervang de te verwijderen sleutel door zijn successor.
@@ -251,16 +269,21 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
         if (node == null){
             return;
         }
-        inorder(node.leftChild, list);
+        inorder(node.getLeftChild(), list);
         list.add(node.leftValue);
-        inorder(node.middleChild, list);
+        inorder(node.getMiddleChild(), list);
         if (node.hasRightValue()) {
             list.add(node.rightValue);
-            inorder(node.rightChild, list);
+            inorder(node.getRightChild(), list);
         }
 
     }
 
+    /**
+     * Eigenlijk enkel om te debuggen, maar vond het wel mooie code.
+     * !! Dit stuk code heb ik met een aantal mensen gedeeld.
+     * @return
+     */
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
@@ -275,9 +298,9 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
 
         stringBuilder.append("     |".repeat(indent)).append("-> ").append(type).append(" ").append(node).append("\n");
 
-        drawWithIndent(indent + 1, node.leftChild  , "L", stringBuilder);
-        drawWithIndent(indent + 1, node.middleChild, "M", stringBuilder);
-        drawWithIndent(indent + 1, node.rightChild , "R", stringBuilder);
+        drawWithIndent(indent + 1, node.getLeftChild(), "L", stringBuilder);
+        drawWithIndent(indent + 1, node.getMiddleChild(), "M", stringBuilder);
+        drawWithIndent(indent + 1, node.getRightChild(), "R", stringBuilder);
 
     }
 

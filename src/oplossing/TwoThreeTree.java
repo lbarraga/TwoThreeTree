@@ -86,10 +86,10 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         // waarde dan met zijn 'in-order successor'
         if (! verwijderNode.isLeaf()) { // Todo search in aparte functie zetten
             pad.push(current);
-            current = (current.leftValue.compareTo(e) == 0) ? current.middleChild : current.rightChild;
+            current = (current.leftValue.compareTo(e) == 0) ? current.getMiddleChild() : current.getRightChild();
             while (current != null) { // Zoek in order successor.
                 pad.push(current); // vul pad verder aan van verwijderNode naar het vervang-blad.
-                current = current.leftChild;
+                current = current.getLeftChild();
             }
 
             Node233<E> leaf = pad.pop();
@@ -138,8 +138,8 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
             verwijderNode = parent;
         }
 
-        if (verwijderNode.middleChild != null){
-            this.root = verwijderNode.middleChild;
+        if (verwijderNode.getMiddleChild() != null){
+            this.root = verwijderNode.getMiddleChild();
         }
 
         return true;
@@ -165,12 +165,12 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         if (node == null){
             return;
         }
-        inorder(node.leftChild, list);
+        inorder(node.getLeftChild(), list);
         list.add(node.leftValue);
-        inorder(node.middleChild, list);
+        inorder(node.getMiddleChild(), list);
         if (node.hasRightValue()) {
             list.add(node.rightValue);
-            inorder(node.rightChild, list);
+            inorder(node.getRightChild(), list);
         }
 
     }
@@ -179,9 +179,9 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         if (node == null) {
             return 0;
         }
-        int links  = 1 + maxDepth(node.leftChild);
-        int midden = 1 + maxDepth(node.middleChild);
-        int rechts = 1 + maxDepth(node.rightChild);
+        int links  = 1 + maxDepth(node.getLeftChild());
+        int midden = 1 + maxDepth(node.getMiddleChild());
+        int rechts = 1 + maxDepth(node.getRightChild());
         return Math.max(links, Math.max(midden, rechts));
     }
 
@@ -199,9 +199,9 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
         stringBuilder.append("     |".repeat(indent)).append("-> ").append(type).append(" ").append(node).append("\n");
 
-        drawWithIndent(indent + 1, node.leftChild  , "L", stringBuilder);
-        drawWithIndent(indent + 1, node.middleChild, "M", stringBuilder);
-        drawWithIndent(indent + 1, node.rightChild , "R", stringBuilder);
+        drawWithIndent(indent + 1, node.getLeftChild(), "L", stringBuilder);
+        drawWithIndent(indent + 1, node.getMiddleChild(), "M", stringBuilder);
+        drawWithIndent(indent + 1, node.getRightChild(), "R", stringBuilder);
 
     }
 }

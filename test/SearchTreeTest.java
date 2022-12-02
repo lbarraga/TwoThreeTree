@@ -233,7 +233,7 @@ public interface SearchTreeTest {
     }
 
     default List<Integer> randomArrayList(int n) {
-        return new Sampler(RG, n).getElements();
+        return new Sampler(RG, n).sample(n);
     }
 
     @Test
@@ -326,7 +326,6 @@ public interface SearchTreeTest {
         for (Integer random : randoms) {
             assertTrue(tree.contains(random), String.format("should contain %d", random));
         }
-        assertEquals(tree.size(), n, "size should be " + n);
         assertIntegrity(tree);
     }
 
@@ -342,10 +341,6 @@ public interface SearchTreeTest {
             Integer random = randoms.get(i);
             tree.remove(random);
             assertFalse(tree.contains(random), String.format("Should not contain %d", random));
-        }
-        for (int i = randoms.size() / 2; i < randoms.size(); i++) {
-            Integer random = randoms.get(i);
-            assertTrue(tree.contains(random), String.format("tree should contain %d :))", random));
         }
         assertIntegrity(tree);
     }
