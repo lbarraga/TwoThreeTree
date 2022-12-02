@@ -1,4 +1,4 @@
-package oplossing.benchmarks;
+package benchmarks;
 
 import opgave.SearchTree;
 import opgave.samplers.Sampler;

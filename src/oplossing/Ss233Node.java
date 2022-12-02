@@ -42,27 +42,6 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
         }
     }
 
-    public void setSplayChild(Ss233Node<E> child) {
-        if (leftChild == null) {
-            leftChild = child;
-        } else if (middleChild == null) {
-            middleChild = child;
-        } else if (rightChild == null) {
-            rightChild = child;
-        } else {
-            assert false : "Setting child on node that has already 3 children"; // TODO wegdoen
-        }
-    }
-    public void removeChild(Ss233Node<E> child) {
-        if (leftChild == child) {
-            leftChild = null;
-        } else if (middleChild == child) {
-            middleChild = null;
-        } else if (rightChild == child) {
-            rightChild = null;
-        }
-    }
-
     /**
      *   [ A B ] (deze node)    [ B ]
      *         \        ->     /     \
@@ -113,10 +92,6 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
 
     }
 
-    public boolean isLeaf(){
-        return this.leftChild == null && this.middleChild == null && this.rightChild == null;
-    }
-
     public void setChildTo(Ss233Node<E> child, Ss233Node<E> to) {
         if (leftChild == child) {
             leftChild = to;
@@ -130,12 +105,6 @@ public class Ss233Node<E extends Comparable<E>> extends Node<E>{
     public boolean hasInOrderSuccessor(E e) {
         return (leftValue.compareTo(e) == 0 && middleChild != null) ||
                 (hasRightValue() && rightValue.compareTo(e) == 0 && rightChild != null);
-    }
-
-    public void percolateUpFromRight(Ss233Node<E> parent){
-        parent.rightValue = leftValue;
-        parent.middleChild = leftChild;
-        parent.rightChild = middleChild;
     }
 
     private void redistributeFromLeft(Ss233Node<E> verwijderNode){
