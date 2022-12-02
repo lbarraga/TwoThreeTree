@@ -47,14 +47,19 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
     }
 
 
-    public void removeValue(Stack<Ss233Node<E>> pad, Ss233Node<E> current, E e) {
+    /**
+     * Verwijder de waarde uit de boom.
+     * @param pad Het pad dat tot nu toe al doorlopen is
+     * @param verwijderNode  de node met de waarde e die verwijderd moet worden
+     * @param e de waarde die verwijderd moet worden
+     */
+    public void removeValue(Stack<Ss233Node<E>> pad, Ss233Node<E> verwijderNode, E e) {
         size -= 1; // Zal nu zeker verwijderd worden
-        Ss233Node<E> verwijderNode = current; // De node met de te verwijderen sleutel.
 
         // Als de node met de te verwijderen sleutel geen blad is, vervang de te verwijderen
         // waarde dan met zijn 'in-order successor'
         if (verwijderNode.hasInOrderSuccessor(e)) {
-            searchInOrderSuccessor(pad, current, e);
+            searchInOrderSuccessor(pad, verwijderNode, e);
             Ss233Node<E> leaf = pad.pop();
             verwijderNode = switchValues(leaf, verwijderNode, e);
         }
@@ -65,20 +70,23 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
             return;
         }
 
+        // Schuif de rechter sleutel op naar de linker sleutel, en verwijder zo de te verwijderen sleutel
+        // (die waarde zal altijd links zitten aangezien het een successor is)
         verwijderNode.leftValue = verwijderNode.rightValue;
         verwijderNode.rightValue = null;
 
         if (verwijderNode.leftValue != null) { // de te verwijderen waarde zat links en is opgegeten door de rechtse
-            if (verwijderNode.getLeftChild() == null) {
+            if (verwijderNode.getLeftChild() == null) { // schuif middelste op naar linkerkind
                 verwijderNode.setLeftChild(verwijderNode.getMiddleChild());
                 verwijderNode.setMiddleChild(null);
             }
-            if (verwijderNode.getMiddleChild() == null) {
+            if (verwijderNode.getMiddleChild() == null) { // schuif rechterkind op naar middelste kind
                 verwijderNode.setMiddleChild(verwijderNode.getRightChild());
                 verwijderNode.setRightChild(null);
             }
             return;
         }
+
 
         if (verwijderNode.getMiddleChild() == null) {
             verwijderNode.setMiddleChild(verwijderNode.getRightChild());
@@ -282,7 +290,7 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
     /**
      * Eigenlijk enkel om te debuggen, maar vond het wel mooie code.
      * !! Dit stuk code heb ik met een aantal mensen gedeeld.
-     * @return
+     * @return tree als string
      */
     @Override
     public String toString(){

@@ -8,8 +8,7 @@ public class TopDownSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Semi
 
     @Override
     public boolean contains(E o) {
-        Stack<Ss233Node<E>> splayPad = find(root, o);
-        return splayPad.peek() != null;
+        return find(root, o).peek() != null;
     }
 
     public Stack<Ss233Node<E>> find(Ss233Node<E> node, E o) {
@@ -67,7 +66,6 @@ public class TopDownSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Semi
             return false;
         }
         removeValue(pad, current, e);
-        //splay(pad);
         return true;
     }
 
