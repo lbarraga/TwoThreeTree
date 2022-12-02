@@ -4,20 +4,9 @@ import opgave.SearchTree;
 
 import java.util.*;
 
-public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
+public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> extends BaseTwoThreeTree<E> {
 
-    protected int size = 0;
     protected Ss233Node<E> root = null;
-
-    @Override
-    public int size() {
-        return this.size;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
-    }
 
     protected void addValue(Stack<Ss233Node<E>> stack, E o) {
 
@@ -36,6 +25,10 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
 
         Ss233Node<E> newNode = new Ss233Node<>(o, null);
         stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
+
+        // Om lange slierten te vermijden en de boom wat gebalanceerd te houden, doen we enkele herdistributies
+        // bij het toevoegen, Dit heeft ook het effect dat er meer toppen zijn met maar één sleutel, wat toevoegen
+        // in de toekomst kan vergemakkelijken.
         if (stack.peek().hasRightValue() && stack.peek().getLeftChild() == newNode) {
             stack.peek().redistribute2();
         } else if (stack.peek().getRightChild() == newNode) {
@@ -145,15 +138,9 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
             positions.pop().setSplayValue(values.remove());
         }
 
-        int aantalKinderen = children.size();
-
         setSingleKeyedChild(first, children); // voeg de kinderen toe aan newChild1
         setSingleKeyedChild(second, children); // Voeg de kinderen toe aan newChild2
         setTwoKeyedChild(third, children); // Voeg de kinderen toe aan newChild3
-
-        if (newParent.getRightChild().getRightChild() != null && aantalKinderen == 7) {
-            newParent.getRightChild().redistribute1();
-        }
 
         // Wanneer er 4 nodes en 5 children zijn doet het probleem zich voor dat
         // dat het linkerkind van newChild4 (EF in docs) het vijfde kind is.
@@ -170,7 +157,7 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
             return newParent;
         }
 
-        parent.setChild(newParent);
+        parent.setChild(newParent); // hecht de gesplayede subtree terug aan de parent
         return newParent;
     }
 
@@ -228,8 +215,6 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
     /**
      * [ E F ] heeft misschien twee sleutels, dus probeer in tegenstelling tot `setSingleKeyedChild`
      * ook het rechter kind te setten
-     * @param node
-     * @param children
      */
     private void setTwoKeyedChild(Ss233Node<E> node, Stack<Ss233Node<E>> children){
         node.setLeftChild(safePop(children));
@@ -264,52 +249,8 @@ public abstract class SemiSplayTwoThreeTree<E extends Comparable<E>> implements 
     }
 
     @Override
-    public Iterator<E> iterator() {
-        List<E> valueList = new ArrayList<>();
-        if (root == null) {
-            return Collections.emptyIterator();
-        }
-        inorder(root, valueList);
-        return valueList.listIterator();
-    }
-
-    private void inorder(Ss233Node<E> node, List<E> list) {
-        if (node == null){
-            return;
-        }
-        inorder(node.getLeftChild(), list);
-        list.add(node.leftValue);
-        inorder(node.getMiddleChild(), list);
-        if (node.hasRightValue()) {
-            list.add(node.rightValue);
-            inorder(node.getRightChild(), list);
-        }
-
-    }
-
-    /**
-     * Eigenlijk enkel om te debuggen, maar vond het wel mooie code.
-     * !! Dit stuk code heb ik met een aantal mensen gedeeld.
-     * @return tree als string
-     */
-    @Override
-    public String toString(){
-        StringBuilder builder = new StringBuilder();
-        drawWithIndent(0, root, "", builder);
-        return builder.toString();
-    }
-
-    private void drawWithIndent(int indent, Ss233Node<E> node, String type, StringBuilder stringBuilder) {
-        if (node == null) {
-            return;
-        }
-
-        stringBuilder.append("     |".repeat(indent)).append("-> ").append(type).append(" ").append(node).append("\n");
-
-        drawWithIndent(indent + 1, node.getLeftChild(), "L", stringBuilder);
-        drawWithIndent(indent + 1, node.getMiddleChild(), "M", stringBuilder);
-        drawWithIndent(indent + 1, node.getRightChild(), "R", stringBuilder);
-
+    protected Node<E> getRoot() {
+        return this.root;
     }
 
 }

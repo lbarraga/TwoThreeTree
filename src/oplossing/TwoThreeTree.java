@@ -1,24 +1,11 @@
 package oplossing;
 
-import opgave.SearchTree;
-
 import java.util.*;
 import java.util.List;
 
-public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
+public class TwoThreeTree<E extends Comparable<E>> extends BaseTwoThreeTree<E> {
 
-    private int size = 0;
     public Node233<E> root = new Node233<>(null, null); // Er is bij aanvang nog geen root node
-
-    @Override
-    public int size() {
-        return size;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
-    }
 
     @Override
     public boolean contains(E o) {
@@ -32,12 +19,8 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     @Override
     public boolean add(E o) {
 
-        Stack<Node233<E>> stack = new Stack<>(); // Stack met de doorlopen nodes.
-        Node233<E> node = root;
-        while (node  != null && ! node.hasValue(o)) {
-            stack.push(node);
-            node = node.getChild(o); // daal af in de boom
-        }
+        Stack<Node233<E>> pad = find(root,o);
+        Node233<E> node = pad.pop();
 
         if (node != null){ // Het element zit al in de boom.
             return false;
@@ -45,36 +28,41 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
 
         // Toevoegen van de waarde o. Dit maakt van de 2-3-boom een bijna-2-3-boom.
         Node233<E> newNode = new Node233<>(o, null);
-        stack.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
+        pad.peek().setChild(newNode); // Voeg de nieuwe node toe aan de laatst bezochte top.
         this.size += 1;
 
         // Doorloop de nodes terug in omgekeerde volgorde en herbalanceer zodat de boom terug geldig wordt.
         // Maak een binaire boom van de parent tot er een plaatsje vrij is om de tweede sleutel toe te voegen.
         // Wanneer dit plaatsje vrij is, percoleer je de huidige node naar boven.
         node = newNode;
-        while (!stack.isEmpty() && stack.peek().hasRightValue()) {
-            Node233<E> parent = stack.pop();
+        while (!pad.isEmpty() && pad.peek().hasRightValue()) {
+            Node233<E> parent = pad.pop();
             parent.convertToBinary(o); // Maak een kleine binaire boom van de node
             node = parent;
         }
 
-        if (!stack.isEmpty()) { // While is gestopt omdat er een plaats vrij is in de rechter value van de parent
-            node.percolateUp(stack.pop(), o);
+        if (!pad.isEmpty()) { // While is gestopt omdat er een plaats vrij is in de rechter value van de parent
+            node.percolateUp(pad.pop(), o);
         }
 
         return true;
     }
 
-    @Override
-    public boolean remove(E e) {
+    public Stack<Node233<E>> find(Node233<E> current, E e) {
         Stack<Node233<E>> pad = new Stack<>(); // Pad tot aan de node met de te verwijderen waarde.
-
         // Zoek de node met de te verwijderen waarde.
-        Node233<E> current = root;
         while (current != null && !current.hasValue(e)){
             pad.push(current);
             current = current.getChild(e);
         }
+        pad.push(current);
+        return pad;
+    }
+
+    @Override
+    public boolean remove(E e) {
+        Stack<Node233<E>> pad = find(root, e);
+        Node233<E> current = pad.pop();
 
         if (current == null){ // De sleutel zat nog niet in de boom, en kan dus niet verwijderd worden.
             return false;
@@ -102,7 +90,6 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
         }
 
         // verwijderNode is nu zeker weten een blad.
-        assert verwijderNode.isLeaf(); // TODO weghalen
 
         // Verwijder de sleutel in het blad.
         if (verwijderNode.leftValue.compareTo(e) == 0){
@@ -152,56 +139,7 @@ public class TwoThreeTree<E extends Comparable<E>> implements SearchTree<E> {
     }
 
     @Override
-    public Iterator<E> iterator() {
-        List<E> valueList = new ArrayList<>();
-        if (root.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        inorder(root, valueList);
-        return valueList.listIterator();
-    }
-
-    private void inorder(Node233<E> node, List<E> list) {
-        if (node == null){
-            return;
-        }
-        inorder(node.getLeftChild(), list);
-        list.add(node.leftValue);
-        inorder(node.getMiddleChild(), list);
-        if (node.hasRightValue()) {
-            list.add(node.rightValue);
-            inorder(node.getRightChild(), list);
-        }
-
-    }
-
-    public int maxDepth(Node233<E> node) {
-        if (node == null) {
-            return 0;
-        }
-        int links  = 1 + maxDepth(node.getLeftChild());
-        int midden = 1 + maxDepth(node.getMiddleChild());
-        int rechts = 1 + maxDepth(node.getRightChild());
-        return Math.max(links, Math.max(midden, rechts));
-    }
-
-    @Override
-    public String toString(){
-        StringBuilder builder = new StringBuilder();
-        drawWithIndent(0, root, "", builder);
-        return builder.toString();
-    }
-
-    private void drawWithIndent(int indent, Node233<E> node, String type, StringBuilder stringBuilder) {
-        if (node == null) {
-            return;
-        }
-
-        stringBuilder.append("     |".repeat(indent)).append("-> ").append(type).append(" ").append(node).append("\n");
-
-        drawWithIndent(indent + 1, node.getLeftChild(), "L", stringBuilder);
-        drawWithIndent(indent + 1, node.getMiddleChild(), "M", stringBuilder);
-        drawWithIndent(indent + 1, node.getRightChild(), "R", stringBuilder);
-
+    protected Node<E> getRoot() {
+        return this.root;
     }
 }

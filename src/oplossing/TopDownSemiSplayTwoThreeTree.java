@@ -16,6 +16,7 @@ public class TopDownSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Semi
         Stack<Ss233Node<E>> pad = new Stack<>();
 
         splayWindow.push(null);
+        // Vind de node en splay wanneer je een window van 3 hebt (+ parent om terug te hechten)
         while (node != null && !node.hasValue(o)) {
             splayWindow.push(node);
             if (splayWindow.size() == 4) {
@@ -46,7 +47,7 @@ public class TopDownSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Semi
         splayWindow.push(current);
         pad.push(current);
         current = (current.leftValue.compareTo(e) == 0) ? current.getMiddleChild() : current.getRightChild();
-        while (current != null) { // Zoek in-order successor.
+        while (current != null) { // Zoek in-order successor en splay terwijl.
             splayWindow.push(current);
             if (splayWindow.size() == 4){
                 current = splayOne(splayWindow.pop(), splayWindow.pop(), splayWindow.pop(), splayWindow.pop());

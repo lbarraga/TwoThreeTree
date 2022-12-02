@@ -1,5 +1,6 @@
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
+import oplossing.BaseTwoThreeTree;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

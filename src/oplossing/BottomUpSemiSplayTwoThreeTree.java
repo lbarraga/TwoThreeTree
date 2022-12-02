@@ -15,6 +15,12 @@ public class BottomUpSemiSplayTwoThreeTree<E extends  Comparable<E>> extends Sem
         return last != null;
     }
 
+    /**
+     * Vind een node. Er wordt niet gesplayed tijdens het zoeken. een splay moet opgeroepen worden na deze methode.
+     * @param node de startnode
+     * @param o de te zoeken waarde
+     * @return het pad van de startnode naar de te zoeken waarde (het pad eindigt met null als deze niet gevonden is).
+     */
     private Stack<Ss233Node<E>> find(Ss233Node<E> node, E o) {
         Stack<Ss233Node<E>> stack = new Stack<>(); // Stack met de doorlopen nodes.
         while (node  != null && ! node.hasValue(o)) {

@@ -2,8 +2,10 @@ package oplossing;
 
 /**
  * Abstracte superklasse node van de Node233 en SS233Node.
- * In deze twee subklassen is er wat codeDuplicate, aangezien overerving hier moeilijk was.
- * @param <E>
+ * In deze twee subklassen is er wat codeDuplicate, aangezien overerving hier moeilijk was door
+ * de recursieve aard van deze klasse. (zie gesprek met Rien vrijdag 2 december tijdens het werkcollege eerste tafel
+ * aan de deur rechts tweede stoel)
+ * @param <E> Het type van de objecten die opgeslaan zullen worden
  */
 public abstract class Node<E extends Comparable<E>> {
 
@@ -55,4 +57,10 @@ public abstract class Node<E extends Comparable<E>> {
     public String toString(){
         return "(" + leftValue + "|" + rightValue + ")";
     }
+
+    public abstract Node<E> getLeftChild();
+
+    public abstract Node<E> getMiddleChild();
+
+    public abstract Node<E> getRightChild();
 }
