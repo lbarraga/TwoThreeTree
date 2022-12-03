@@ -2,8 +2,10 @@ package benchmarks;
 
 import opgave.SearchTree;
 import opgave.samplers.Sampler;
+import opgave.samplers.ZipfSampler;
 import oplossing.BottomUpSemiSplayTwoThreeTree;
 import oplossing.Ss233Node;
+import oplossing.TopDownSemiSplayTwoThreeTree;
 import oplossing.TwoThreeTree;
 
 import java.util.List;
@@ -11,39 +13,63 @@ import java.util.Random;
 
 public class TwoThreeTreeBenchMarker {
 
-    public static final Random RG = new Random();
-    public static int aantal = 0;
-    public static int gem = 0;
-    public static int visited = 0;
+    private static final int nTrails = 5;
+    private static final int n = 1_000_000;
 
-    public static void main(String[] args) {
-        meanTimeAddNRandoms(10_000_000, 3);
+    @FunctionalInterface
+    private interface TreeOperation {
+        boolean doOperation(SearchTree<Integer> tree, Integer integer);
     }
 
-    public static double timeAddNRandoms(int n) {
-        Sampler sampler = new Sampler(RG, n);
-        List<Integer> samples = sampler.getElements();
-        BottomUpSemiSplayTwoThreeTree<Integer> tree = new BottomUpSemiSplayTwoThreeTree<>();
+    public static final Random RG = new Random();
+
+    public static void main(String[] args) {
+        benchMarkSampler(new Sampler(RG, n), "Normal Sampler");
+        benchMarkSampler(new ZipfSampler(RG, n), "Zipf Sampler");
+    }
+
+    public static void benchMarkSampler(Sampler sampler, String samplerUitleg) {
+        prettyPrint(samplerUitleg);
+        benchMarkTree(new TwoThreeTree<>(), sampler, "TwoThreeTree");
+        benchMarkTree(new BottomUpSemiSplayTwoThreeTree<>(), sampler, "BottomUpSemiSplayTwoThreeTree");
+        benchMarkTree(new TopDownSemiSplayTwoThreeTree<>(), sampler, "TopDownSemiSplayTwoThreeTree");
+    }
+
+    public static void benchMarkTree(SearchTree<Integer> searchTree, Sampler sampler, String treeName) {
+        System.out.println(" ================================ " + treeName + " Benchmark ================================");
+        benchmarkSingleOperationMeanTime(searchTree, SearchTree::add, "Toevoegen", sampler);
+        benchmarkSingleOperationMeanTime(searchTree, SearchTree::contains, "Contains", sampler);
+        benchmarkSingleOperationMeanTime(searchTree, SearchTree::remove, "Verwijderen", sampler);
+    }
+
+    public static void benchmarkSingleOperationMeanTime(SearchTree<Integer> tree, TreeOperation treeOperation, String uitleg, Sampler sampler) {
+        System.out.println(" *** Operation: " + uitleg + " on " + n + " elements");
+        double sum = 0;
+        for (int i = 0; i < nTrails; i++) {
+            sum += benchMarkSingleOperation(tree, treeOperation, sampler);
+        }
+        double mean = sum / nTrails;
+        System.out.println(uitleg + " " + n + " elements: mean time " + mean + "s.");
+        System.out.println();
+    }
+
+    public static double benchMarkSingleOperation(SearchTree<Integer> tree, TreeOperation treeOperation, Sampler sampler) {
+        List<Integer> samples = sampler.sample(n);
 
         long start = System.currentTimeMillis();
         for (Integer rand : samples) {
-            tree.add(rand);
+            treeOperation.doOperation(tree, rand);
         }
         long time = System.currentTimeMillis() - start;
-        double timeInSec = (double) time / 1000;
-        //System.out.println(tree.maxDepth(tree.root));
-        System.out.println("Adding " + n + " elements took " + timeInSec + "s");
-        return timeInSec;
+        return (double) time / 1000;
     }
 
-    public static void meanTimeAddNRandoms(int nNumbers, int nTrails) {
-        double sum = 0;
-        for (int i = 0; i < nTrails; i++) {
-            System.out.print("Trail " + (i+1) + ": ");
-            sum += timeAddNRandoms(nNumbers);
-        }
-        double mean = sum / nTrails;
-        System.out.println(nTrails + " keer " + nNumbers + " getallen toevoegen geeft als gemiddelde tijd " + mean + "s");
+    public static void prettyPrint(String string) {
+        System.out.println();
+        System.out.println("***********************************************************");
+        System.out.println("|                     " + string);
+        System.out.println("***********************************************************");
+        System.out.println();
     }
 
 }
