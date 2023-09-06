@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class TwoThreeTreeBenchMarker {
 
-    private static final int nTrails = 5;
+    private static final int nTrails = 1;
     private static final boolean prettyPrint = false;
 
     @FunctionalInterface
@@ -23,7 +23,7 @@ public class TwoThreeTreeBenchMarker {
     public static final Random RG = new Random();
 
     public static void main(String[] args) {
-        for (int i = 50_000; i < 5_000_000; i*=2) {
+        for (int i = 50_000; i < 5_000_000; i += 50_000) {
             BenchMarkCSVPrinter.print(benchMark(i));
         }
     }
